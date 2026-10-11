@@ -1,0 +1,10 @@
+# Only needed if the frontend is served by Apache/LiteSpeed (Hostinger shared hosting).
+# Sends every non-file URL (such as /plan/<token>) to the app, and /privacy to privacy.html.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{REQUEST_URI} ^/api/ [OR]
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+  RewriteRule ^privacy/?$ /privacy.html [L]
+  RewriteRule ^ /index.html [L]
+</IfModule>

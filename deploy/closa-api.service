@@ -1,0 +1,16 @@
+# /etc/systemd/system/closa-api.service
+# Then: systemctl daemon-reload && systemctl enable --now closa-api
+[Unit]
+Description=Closa Health API
+After=network.target
+
+[Service]
+User=closa
+WorkingDirectory=/opt/closa/backend
+EnvironmentFile=/etc/closa.env
+# --proxy-headers lets the rate limit see the visitor's real IP from nginx
+ExecStart=/opt/closa/backend/.venv/bin/uvicorn main:app --host 127.0.0.1 --port 8000 --proxy-headers --forwarded-allow-ips=127.0.0.1
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

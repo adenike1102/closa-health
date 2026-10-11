@@ -1,0 +1,207 @@
+{
+  "Q0": {
+    "type": "multi",
+    "codes": [
+      "s1_heavy_faint",
+      "s2_sudden_pain",
+      "s3_preg_symptoms",
+      "s4_post_pregnancy",
+      "s5_postmeno_bleed",
+      "none"
+    ]
+  },
+  "Q1": {
+    "type": "multi",
+    "codes": [
+      "pain",
+      "heavy",
+      "irregular",
+      "other_bleeding",
+      "ttc"
+    ]
+  },
+  "Q2": {
+    "type": "single",
+    "codes": [
+      "lt16",
+      "16_19",
+      "20_34",
+      "35_39",
+      "40_44",
+      "45_54",
+      "55p"
+    ]
+  },
+  "Q3": {
+    "type": "single",
+    "codes": [
+      "yes",
+      "no",
+      "unsure",
+      "not_active"
+    ]
+  },
+  "Q4": {
+    "type": "single",
+    "codes": [
+      "none",
+      "hormonal",
+      "copper_iud",
+      "non_hormonal"
+    ]
+  },
+  "Q5": {
+    "type": "single",
+    "codes": [
+      "regular",
+      "frequent",
+      "infrequent",
+      "unpredictable",
+      "none_3m",
+      "never",
+      "menopause"
+    ]
+  },
+  "Q6": {
+    "type": "single",
+    "codes": [
+      "no",
+      "yes_bf",
+      "yes_not_bf",
+      "prefer_not"
+    ]
+  },
+  "Q7": {
+    "type": "multi",
+    "codes": [
+      "change_1_2h",
+      "clots",
+      "gt8_days",
+      "flooding",
+      "none"
+    ]
+  },
+  "Q8": {
+    "type": "multi",
+    "codes": [
+      "fatigue",
+      "dizzy",
+      "pica",
+      "since_first_period",
+      "bruising",
+      "none"
+    ]
+  },
+  "Q9": {
+    "type": "multi",
+    "codes": [
+      "between",
+      "after_sex",
+      "none"
+    ]
+  },
+  "Q10": {
+    "type": "single",
+    "codes": [
+      "none",
+      "mild",
+      "moderate",
+      "severe"
+    ]
+  },
+  "Q11": {
+    "type": "multi",
+    "codes": [
+      "worsening",
+      "painkillers_fail",
+      "disabling",
+      "non_cyclic",
+      "deep_sex_pain",
+      "bowel_bladder",
+      "none"
+    ]
+  },
+  "Q12": {
+    "type": "multi",
+    "codes": [
+      "hair_acne",
+      "dark_skin",
+      "weight_change",
+      "bulk",
+      "hot_flushes",
+      "thyroid_sx",
+      "nipple_milk",
+      "discharge",
+      "fever_pain",
+      "none"
+    ]
+  },
+  "Q13": {
+    "type": "multi",
+    "codes": [
+      "diet_weight_loss",
+      "hard_training",
+      "stress",
+      "headache_vision",
+      "mental_health_meds",
+      "none"
+    ]
+  },
+  "Q14": {
+    "type": "multi",
+    "codes": [
+      "fibroids",
+      "endometriosis",
+      "pcos",
+      "thyroid",
+      "sickle_cell",
+      "pid_sti",
+      "none"
+    ]
+  },
+  "Q15": {
+    "type": "multi",
+    "codes": [
+      "had_scan",
+      "had_bloods",
+      "told_normal",
+      "treatment_failed",
+      "many_visits",
+      "none"
+    ]
+  },
+  "Q16": {
+    "type": "single",
+    "codes": [
+      "trying_now",
+      "within_12m",
+      "later",
+      "not_planning"
+    ]
+  },
+  "T1": {
+    "type": "single",
+    "codes": [
+      "lt6m",
+      "6_11m",
+      "gte12m"
+    ]
+  },
+  "T2": {
+    "type": "single",
+    "codes": [
+      "normal",
+      "abnormal",
+      "not_done",
+      "na"
+    ]
+  },
+  "T3": {
+    "type": "multi",
+    "codes": [
+      "miscarriage_2plus",
+      "ectopic",
+      "none"
+    ]
+  }
+}

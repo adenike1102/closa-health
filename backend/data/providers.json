@@ -1,0 +1,420 @@
+[
+  {
+    "city": "Lagos",
+    "name": "Lagos University Teaching Hospital (LUTH)",
+    "kind": "Federal teaching hospital",
+    "area": "Idi-Araba",
+    "address": "Ishaga Road, Idi-Araba, Surulere",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab",
+      "fert"
+    ],
+    "note": "Gynaecology, haematology and fertility services, with specialist referral clinics."
+  },
+  {
+    "city": "Lagos",
+    "name": "Lagos State University Teaching Hospital (LASUTH)",
+    "kind": "State teaching hospital",
+    "area": "Ikeja",
+    "address": "1–5 Oba Akinjobi Way, Ikeja",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab"
+    ],
+    "note": "Gynaecology and haematology clinics."
+  },
+  {
+    "city": "Lagos",
+    "name": "Lagos Island Maternity Hospital",
+    "kind": "State specialist hospital",
+    "area": "Lagos Island",
+    "address": "Campbell Street, Lagos Island",
+    "cats": [
+      "gyn",
+      "fp"
+    ],
+    "note": "Women’s health and family planning."
+  },
+  {
+    "city": "Lagos",
+    "name": "General Hospital Lagos (Odan)",
+    "kind": "State general hospital",
+    "area": "Lagos Island",
+    "address": "Broad Street, Lagos Island",
+    "cats": [
+      "gp",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Gbagada General Hospital",
+    "kind": "State general hospital",
+    "area": "Gbagada",
+    "address": "Hospital Road, Gbagada",
+    "cats": [
+      "gp",
+      "lab",
+      "fp"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Reddington Hospital",
+    "kind": "Private hospital",
+    "area": "Victoria Island",
+    "address": "12 Idowu Martins Street, Victoria Island",
+    "cats": [
+      "gp",
+      "gyn",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Lagoon Hospitals",
+    "kind": "Private hospital",
+    "area": "Ikoyi",
+    "address": "17B Bourdillon Road, Ikoyi",
+    "cats": [
+      "gp",
+      "gyn",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Evercare Hospital Lekki",
+    "kind": "Private hospital",
+    "area": "Lekki",
+    "address": "1 Admiralty Way, Lekki Phase 1",
+    "cats": [
+      "gp",
+      "gyn",
+      "lab",
+      "haem"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Sickle Cell Foundation Nigeria",
+    "kind": "Sickle cell centre",
+    "area": "Idi-Araba",
+    "address": "National Sickle Cell Centre, Idi-Araba, Surulere",
+    "cats": [
+      "haem"
+    ],
+    "note": "Sickle cell care, genotype testing and counselling."
+  },
+  {
+    "city": "Lagos",
+    "name": "Synlab Nigeria",
+    "kind": "Diagnostic laboratory",
+    "area": "Ikeja and other branches",
+    "address": "Several branches across Lagos",
+    "cats": [
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Clina-Lancet Laboratories",
+    "kind": "Diagnostic laboratory",
+    "area": "Victoria Island",
+    "address": "Victoria Island, with branches across Lagos",
+    "cats": [
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Bridge Clinic",
+    "kind": "Fertility clinic",
+    "area": "Ikeja",
+    "address": "66 Oduduwa Way, Ikeja GRA",
+    "cats": [
+      "fert"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "Nordica Fertility Centre",
+    "kind": "Fertility clinic",
+    "area": "Ikoyi",
+    "address": "106 Norman Williams Street, Ikoyi",
+    "cats": [
+      "fert"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Lagos",
+    "name": "MSI Nigeria Reproductive Choices",
+    "kind": "Family planning clinic",
+    "area": "Several locations",
+    "address": "Clinics across Lagos",
+    "cats": [
+      "fp"
+    ],
+    "note": "Contraception and reproductive health services."
+  },
+  {
+    "city": "Abuja",
+    "name": "National Hospital Abuja",
+    "kind": "Federal tertiary hospital",
+    "area": "Central Business District",
+    "address": "Plot 132 Central District, Phase II, Garki",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab",
+      "fert"
+    ],
+    "note": "Gynaecology, haematology and assisted conception services."
+  },
+  {
+    "city": "Abuja",
+    "name": "University of Abuja Teaching Hospital",
+    "kind": "Federal teaching hospital",
+    "area": "Gwagwalada",
+    "address": "Gwagwalada, FCT",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Abuja",
+    "name": "Asokoro District Hospital",
+    "kind": "FCT district hospital",
+    "area": "Asokoro",
+    "address": "Asokoro, Abuja",
+    "cats": [
+      "gp",
+      "gyn",
+      "fp",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Abuja",
+    "name": "Wuse District Hospital",
+    "kind": "FCT district hospital",
+    "area": "Wuse",
+    "address": "Wuse Zone 3, Abuja",
+    "cats": [
+      "gp",
+      "gyn",
+      "fp",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Abuja",
+    "name": "Garki Hospital Abuja",
+    "kind": "Hospital",
+    "area": "Garki",
+    "address": "Tafawa Balewa Way, Area 3, Garki",
+    "cats": [
+      "gp",
+      "gyn",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Abuja",
+    "name": "Nisa Premier Hospital",
+    "kind": "Private hospital and fertility centre",
+    "area": "Jabi",
+    "address": "Jabi, Abuja",
+    "cats": [
+      "gyn",
+      "fert",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Abuja",
+    "name": "Synlab Nigeria (Abuja)",
+    "kind": "Diagnostic laboratory",
+    "area": "Several branches",
+    "address": "Branches across Abuja",
+    "cats": [
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Abuja",
+    "name": "Bridge Clinic Abuja",
+    "kind": "Fertility clinic",
+    "area": "Maitama",
+    "address": "Maitama, Abuja",
+    "cats": [
+      "fert"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Abuja",
+    "name": "MSI Nigeria Reproductive Choices",
+    "kind": "Family planning clinic",
+    "area": "Several locations",
+    "address": "Clinics across Abuja",
+    "cats": [
+      "fp"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Port Harcourt",
+    "name": "University of Port Harcourt Teaching Hospital (UPTH)",
+    "kind": "Federal teaching hospital",
+    "area": "Alakahia",
+    "address": "East-West Road, Alakahia, Port Harcourt",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab",
+      "fert"
+    ],
+    "note": "Gynaecology, haematology and fertility services."
+  },
+  {
+    "city": "Port Harcourt",
+    "name": "Rivers State University Teaching Hospital",
+    "kind": "State teaching hospital",
+    "area": "Old GRA",
+    "address": "Harley Street, Old GRA, Port Harcourt",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab",
+      "fp"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Port Harcourt",
+    "name": "Bridge Clinic Port Harcourt",
+    "kind": "Fertility clinic",
+    "area": "GRA",
+    "address": "GRA Phase 2, Port Harcourt",
+    "cats": [
+      "fert"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Port Harcourt",
+    "name": "Synlab Nigeria (Port Harcourt)",
+    "kind": "Diagnostic laboratory",
+    "area": "Port Harcourt",
+    "address": "Port Harcourt",
+    "cats": [
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Port Harcourt",
+    "name": "MSI Nigeria Reproductive Choices",
+    "kind": "Family planning clinic",
+    "area": "Port Harcourt",
+    "address": "Port Harcourt",
+    "cats": [
+      "fp"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Oyo State",
+    "name": "University College Hospital (UCH)",
+    "kind": "Federal teaching hospital",
+    "area": "Ibadan",
+    "address": "Queen Elizabeth Road, Agodi, Ibadan",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab",
+      "fert"
+    ],
+    "note": "Gynaecology, haematology and fertility services."
+  },
+  {
+    "city": "Oyo State",
+    "name": "Adeoyo Maternity Teaching Hospital",
+    "kind": "State specialist hospital",
+    "area": "Ibadan",
+    "address": "Yemetu, Ibadan",
+    "cats": [
+      "gyn",
+      "fp"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Oyo State",
+    "name": "Ring Road State Hospital",
+    "kind": "State general hospital",
+    "area": "Ibadan",
+    "address": "Ring Road, Ibadan",
+    "cats": [
+      "gp",
+      "lab",
+      "fp"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Oyo State",
+    "name": "Jericho Specialist Hospital",
+    "kind": "State specialist hospital",
+    "area": "Ibadan",
+    "address": "Jericho, Ibadan",
+    "cats": [
+      "gp",
+      "gyn",
+      "lab"
+    ],
+    "note": ""
+  },
+  {
+    "city": "Oyo State",
+    "name": "LAUTECH Teaching Hospital",
+    "kind": "State teaching hospital",
+    "area": "Ogbomoso",
+    "address": "Ogbomoso, Oyo State",
+    "cats": [
+      "gyn",
+      "gp",
+      "haem",
+      "lab"
+    ],
+    "note": ""
+  }
+]
