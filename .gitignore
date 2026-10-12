@@ -5,3 +5,7 @@ __pycache__/
 *.db
 .env
 .pytest_cache/
+api/config.php
+api/storage/*
+!api/storage/.htaccess
+dist-shared/

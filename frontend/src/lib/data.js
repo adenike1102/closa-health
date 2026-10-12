@@ -1,5 +1,5 @@
 // Static copy for the landing page and the providers screen.
-// The provider directory itself lives in the backend (backend/data/providers.json).
+// The provider directory itself lives in the API folder (api/data/providers.json).
 
 export const CITIES = ['Lagos', 'Abuja', 'Port Harcourt', 'Oyo State'];
 

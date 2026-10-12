@@ -1,10 +1,41 @@
-# Only needed if the frontend is served by Apache/LiteSpeed (Hostinger shared hosting).
-# Sends every non-file URL (such as /plan/<token>) to the app, and /privacy to privacy.html.
+# Site-root rules for Apache / LiteSpeed (Hostinger shared hosting).
+Options -Indexes
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  RewriteCond %{REQUEST_URI} ^/api/ [OR]
+
+  # Always use HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # /api/... is handled by PHP
+  RewriteRule ^api/index\.php$ - [L]
+  RewriteRule ^api(/.*)?$ api/index.php [L]
+
+  # /privacy -> privacy.html
+  RewriteRule ^privacy/?$ privacy.html [L]
+
+  # Real files (assets, images) are served as they are; everything else, such as
+  # /plan/<token>, is the single-page app.
   RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
-  RewriteRule ^privacy/?$ /privacy.html [L]
-  RewriteRule ^ /index.html [L]
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Strict-Transport-Security "max-age=31536000"
+</IfModule>
+
+# Built files have hashed names, so browsers can keep them for a year.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  <FilesMatch "^.*\.(js|css|woff2?|png)$">
+    ExpiresDefault "access plus 1 year"
+  </FilesMatch>
+  <FilesMatch "^(index|privacy)\.html$">
+    ExpiresDefault "access plus 0 seconds"
+  </FilesMatch>
 </IfModule>

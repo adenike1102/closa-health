@@ -103,8 +103,8 @@ describe('period-app CSV', () => {
 });
 
 describe('server answer list', () => {
-  it('backend/data/questions_schema.json matches the questions (run: node scripts/export_schema.mjs)', () => {
-    const file = JSON.parse(readFileSync(new URL('../../../../backend/data/questions_schema.json', import.meta.url), 'utf8'));
+  it('api/data/questions_schema.json matches the questions (run: node scripts/export_schema.mjs)', () => {
+    const file = JSON.parse(readFileSync(new URL('../../../../api/data/questions_schema.json', import.meta.url), 'utf8'));
     expect(file).toEqual(buildSchema());
   });
 });

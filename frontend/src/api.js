@@ -1,4 +1,4 @@
-// Small wrapper around the backend. All routes live under /api.
+// Small wrapper around the PHP API. All routes live under /api.
 
 async function request(path, options = {}) {
   const res = await fetch('/api' + path, {
