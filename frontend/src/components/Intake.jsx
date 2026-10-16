@@ -49,7 +49,7 @@ export default function Intake({ state, setState, onNext, onBack, onCsv }) {
         kicker={counter}
         title="A few short questions."
         text="Answer what you can. You can go back and change an answer at any time."
-        note="Your answers are private and encrypted."
+        note="Your answers are private."
         noteIcon={<Lock color="#D8C6D1" size={20} />}
       />
       <div className="form-col">

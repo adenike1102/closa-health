@@ -119,7 +119,7 @@ export default function Landing({ pre, setPre, onStart }) {
             ))}
           </div>
           <div className="trust-grid">
-            <div className="trust"><Lock /><span><strong style={{ fontWeight: 500 }}>Private by design.</strong> Your answers are encrypted. We never sell your data and only share it when you ask us to.</span></div>
+            <div className="trust"><Lock /><span><strong style={{ fontWeight: 500 }}>Private by design.</strong> We never sell your data and only share it when you ask us to.</span></div>
             <div className="trust"><Info size={22} /><span><strong style={{ fontWeight: 500 }}>Guidance, not diagnosis.</strong> Closa helps you prepare for care. Only a clinician can diagnose you.</span></div>
           </div>
         </div>
