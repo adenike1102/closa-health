@@ -137,7 +137,7 @@ export default function Landing({ pre, setPre, onStart }) {
       <footer className="footer">
         <img className="logo" src="/brand/lockup-aubergine.png" alt="Closa Health" />
         <p>Closa Health offers guidance, not diagnosis. If you need urgent help, call 112 or go to the nearest hospital emergency unit.</p>
-        <span>© 2026 Closa Health</span>
+        <span>© 2026 Closa Health · <a href="/privacy">Privacy policy</a></span>
       </footer>
     </div>
   );
