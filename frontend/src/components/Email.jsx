@@ -3,10 +3,11 @@ import { SidePanel } from './Intake.jsx';
 
 const EMAIL_OK = /^\S+@\S+\.\S+$/;
 
-// Screen 3: email capture (required) + consent.
-export default function Email({ state, setState, showTtcConsent, saving, error, onBack, onSubmit, onSkipSave }) {
-  const { email, name, consent, ttcConsent, launchOptin } = state;
-  const ok = EMAIL_OK.test(email) && consent && !saving;
+// Screen 3: email capture. Pressing "See my plan" is the agreement to the privacy policy (stated under the button).
+// The only tickbox is the optional launch-list one, and it is never ticked for the visitor.
+export default function Email({ state, setState, saving, error, onBack, onSubmit, onSkipSave }) {
+  const { email, name, launchOptin } = state;
+  const ok = EMAIL_OK.test(email) && !saving;
 
   return (
     <div className="screen form-screen">
@@ -37,16 +38,6 @@ export default function Email({ state, setState, showTtcConsent, saving, error, 
             <span>Email address</span>
             <input type="email" value={email} onChange={(e) => setState({ email: e.target.value })} placeholder="you@example.com" autoComplete="email" inputMode="email" maxLength={254} />
           </label>
-          <button type="button" className={'check' + (consent ? ' on' : '')} onClick={() => setState({ consent: !consent })} role="checkbox" aria-checked={consent}>
-            <span className="box">{consent && <Check size={13} />}</span>
-            <span>I agree that Closa can store my answers to create my care plan, as set out in the <a href="/privacy" target="_blank" rel="noopener" onClick={(e) => e.stopPropagation()}>privacy policy</a>. I can delete them at any time.</span>
-          </button>
-          {showTtcConsent && (
-            <button type="button" className={'check' + (ttcConsent ? ' on' : '')} onClick={() => setState({ ttcConsent: !ttcConsent })} role="checkbox" aria-checked={ttcConsent}>
-              <span className="box">{ttcConsent && <Check size={13} />}</span>
-              <span>Optional: save my pregnancy plans with my care plan. If you leave this unticked, we’ll still use them to build your plan but won’t store them. We never use them for marketing.</span>
-            </button>
-          )}
           <button type="button" className={'check' + (launchOptin ? ' on' : '')} onClick={() => setState({ launchOptin: !launchOptin })} role="checkbox" aria-checked={launchOptin}>
             <span className="box">{launchOptin && <Check size={13} />}</span>
             <span>Keep me updated about new features on Closa Health. No spamming!</span>
@@ -60,7 +51,7 @@ export default function Email({ state, setState, showTtcConsent, saving, error, 
         </form>
         <div className="bottom-bar" style={{ gap: 10 }}>
           <button className="btn btn-block" type="submit" form="email-form" disabled={!ok}>{saving ? 'Saving…' : 'See my plan'}</button>
-          <span className="small">No spam. Unsubscribe any time.</span>
+          <p className="agree">By clicking “See my plan” you agree to our <a href="/privacy" target="_blank" rel="noopener">privacy policy</a> and that Closa can store your answers to create your care plan. You can delete them at any time.</p>
         </div>
       </div>
     </div>

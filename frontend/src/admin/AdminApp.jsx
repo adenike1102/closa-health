@@ -145,7 +145,6 @@ function AudienceTab({ d }) {
           <Section title="Contraception"><BarList rows={rowsOf(a.contraception, q('Q4'))} total={a.n} /></Section>
           <Section title="Conditions already diagnosed"><BarList rows={rowsOf(a.conditions, q('Q14'))} total={a.n} /></Section>
           <Section title="Care so far"><BarList rows={rowsOf(a.history, q('Q15'))} total={a.n} /></Section>
-          <Section title="Pregnancy plans" note={`Only people who agreed to save these (${num(a.ttc_n)}), so this undercounts.`}><BarList rows={rowsOf(a.ttc, q('Q16'))} total={a.ttc_n} /></Section>
         </div>
       </Gate>
     </>
@@ -220,7 +219,6 @@ function HealthTab({ d }) {
         <Section title="Choices people made">
           <ul className="ad-facts">
             <li><b>{pct(h.launch_optin_rate)}</b> joined the launch list ({num(h.launch_optins)})</li>
-            <li><b>{pct(h.ttc_optin_rate)}</b> agreed to save pregnancy plans ({num(h.ttc_optins)})</li>
             <li><b>{num(h.deleted)}</b> deleted their plan in this period</li>
           </ul>
         </Section>

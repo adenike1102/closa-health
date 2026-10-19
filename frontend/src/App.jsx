@@ -19,11 +19,11 @@ const initial = {
   screen: 'landing', // landing | intake | email | plan | providers
   qid: 'Q0', hist: [], emergency: false,
   answers: {}, upload: null, pre: {},
-  email: '', name: '', consent: false, ttcConsent: false, launchOptin: false,
+  email: '', name: '', launchOptin: false,
   activeCat: 'gyn', city: 'Lagos', token: null,
 };
 
-// Keeps an in-progress intake across a page refresh. The email, name and consents are never stored here.
+// Keeps an in-progress intake across a page refresh. The email, name and tickbox are never stored here.
 function restore() {
   try {
     const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
@@ -59,7 +59,7 @@ export default function App() {
   // Remember progress for refreshes.
   useEffect(() => {
     try {
-      const { email, name, consent, ttcConsent, launchOptin, upload, ...keep } = s;
+      const { email, name, launchOptin, upload, ...keep } = s;
       sessionStorage.setItem(STORE_KEY, JSON.stringify(keep));
     } catch (e) { /* storage may be blocked; the app works without it */ }
   }, [s]);
@@ -116,7 +116,7 @@ export default function App() {
     setSaving(true); setSaveError(false);
     try {
       const r = await savePlan({
-        email: s.email.trim(), name: s.name.trim() || undefined, consent: s.consent, ttc_consent: s.ttcConsent,
+        email: s.email.trim(), name: s.name.trim() || undefined, consent: true, // pressing "See my plan" is the agreement
         launch_optin: s.launchOptin, answers: s.answers, sid: trackingAllowed() ? getSid() : undefined, outcome: outcomeSummary(evaluate(s.answers)),
       });
       window.history.replaceState(null, '', '/plan/' + r.token);
@@ -170,7 +170,6 @@ export default function App() {
     return (
       <Email
         state={s} setState={patch} saving={saving} error={saveError}
-        showTtcConsent={evaluate(s.answers).showTtc}
         onBack={onBack} onSubmit={submitEmail}
         onSkipSave={() => patch({ screen: 'plan' })}
       />
