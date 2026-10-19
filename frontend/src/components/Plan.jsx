@@ -3,6 +3,7 @@ import { evaluate, CAT_ACTION } from '../lib/evaluate.js';
 import { CONTENT } from '../lib/content.js';
 import { optOf, arrOf } from '../lib/questions.js';
 import { Arrow, Check, Info, Warn, Deco, PlanIcons } from './Icons.jsx';
+import { track } from '../lib/track.js';
 
 const SCALE = ['Emergency', '1–2 days', '2 weeks', '4–6 weeks', 'Routine'];
 
@@ -42,7 +43,7 @@ function printSummary(text) {
 }
 
 // Screen 4: the care plan, built from her answers by the rules engine.
-export default function Plan({ answers, email, canDelete, onAction, onDelete }) {
+export default function Plan({ answers, email, name, canDelete, onAction, onDelete }) {
   const P = useMemo(() => evaluate(answers), [answers]);
   const [asked, setAsked] = useState({});
   const [copied, setCopied] = useState(false);
@@ -75,6 +76,7 @@ export default function Plan({ answers, email, canDelete, onAction, onDelete }) 
 
   const copy = () => {
     try { navigator.clipboard.writeText(P.summary); } catch (e) { /* clipboard may be blocked */ }
+    track('summary_copy');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -92,7 +94,7 @@ export default function Plan({ answers, email, canDelete, onAction, onDelete }) 
           <div className="aside-card">
             <Deco size={180} color="#6b4566" stroke={10} style={{ right: -50, top: -40 }} />
             <p className="k">Your care plan · {today}</p>
-            <h1>Here’s what to do next, step by step.</h1>
+            <h1>{name ? name + ', here’s what to do next.' : 'Here’s what to do next, step by step.'}</h1>
             <div className="chips">{chips.map((c) => <span key={c} className="chip">{c}</span>)}</div>
             <div className="howsoon"><small>How soon</small><b>{P.urgency.label}</b></div>
             <nav className="step-index" aria-label="Plan steps">
@@ -199,7 +201,7 @@ export default function Plan({ answers, email, canDelete, onAction, onDelete }) 
             <div className="inner">
               <span className="counter">Tap to tick off as you ask · {Object.values(asked).filter(Boolean).length} of {P.questions.length} asked</span>
               {P.questions.map((text, i) => (
-                <button key={text} className={'q-check' + (asked[i] ? ' on' : '')} onClick={() => setAsked({ ...asked, [i]: !asked[i] })} aria-pressed={!!asked[i]}>
+                <button key={text} className={'q-check' + (asked[i] ? ' on' : '')} onClick={() => { if (!asked[i]) track('checklist_tick'); setAsked({ ...asked, [i]: !asked[i] }); }} aria-pressed={!!asked[i]}>
                   <span className="ring">{asked[i] && <Check />}</span><span>{text}</span>
                 </button>
               ))}
@@ -245,7 +247,7 @@ export default function Plan({ answers, email, canDelete, onAction, onDelete }) 
               {copied
                 ? <span className="copied"><Check color="#4A2545" />Copied</span>
                 : <button className="btn" onClick={copy}>Copy summary</button>}
-              <button className="btn btn-outline" onClick={() => printSummary(P.summary)}>Print</button>
+              <button className="btn btn-outline" onClick={() => { track('summary_print'); printSummary(P.summary); }}>Print</button>
             </div>
           </Section>
 

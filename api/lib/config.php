@@ -20,6 +20,11 @@ function config(): array
         'smtp_secure' => 'ssl',                      // ssl | tls | none
         'smtp_user'   => '',
         'smtp_password' => '',
+        // Dashboard logins (see api/config.example.php). Leave empty to switch the dashboard off.
+        'admin_password' => '',
+        'admin_password_hash' => '',
+        'contacts_password' => '',
+        'contacts_password_hash' => '',
     ];
     $file = __DIR__ . '/../config.php';
     if (is_file($file)) {
@@ -29,6 +34,8 @@ function config(): array
         'CLOSA_BASE_URL' => 'base_url', 'CLOSA_DB' => 'db_path', 'CLOSA_MAIL_TRANSPORT' => 'mail_transport',
         'CLOSA_MAIL_FILE' => 'mail_file', 'CLOSA_PROVIDERS_FILE' => 'providers_file', 'CLOSA_SMTP_HOST' => 'smtp_host', 'CLOSA_SMTP_PORT' => 'smtp_port',
         'CLOSA_SMTP_SECURE' => 'smtp_secure', 'CLOSA_SMTP_USER' => 'smtp_user', 'CLOSA_SMTP_PASSWORD' => 'smtp_password',
+        'CLOSA_ADMIN_PASSWORD' => 'admin_password', 'CLOSA_CONTACTS_PASSWORD' => 'contacts_password',
+        'CLOSA_ADMIN_PASSWORD_HASH' => 'admin_password_hash', 'CLOSA_CONTACTS_PASSWORD_HASH' => 'contacts_password_hash',
     ];
     foreach ($env as $name => $key) {
         $v = getenv($name);

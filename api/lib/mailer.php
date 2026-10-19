@@ -5,9 +5,10 @@
 //   mail_transport = file : appends the message to mail_file (tests and local development)
 // A mail problem never stops the plan being saved; it is only logged.
 
-function plan_message(string $to, string $link): array
+function plan_message(string $to, string $link, ?string $name = null): array
 {
-    $text = "Hello,\r\n\r\n"
+    $hello = $name !== null ? 'Hello ' . $name . ',' : 'Hello,';
+    $text = $hello . "\r\n\r\n"
         . "Your free Closa Health care plan is ready. You can open it any time, and show it to a doctor:\r\n\r\n"
         . "$link\r\n\r\n"
         . "This plan is guidance based on your answers. It is not a diagnosis. "
@@ -17,7 +18,7 @@ function plan_message(string $to, string $link): array
         . "Closa Health\r\n";
     $safe = htmlspecialchars($link, ENT_QUOTES);
     $html = '<div style="font-family:Arial,sans-serif;color:#1A1A1A;max-width:520px;line-height:1.5">'
-        . '<p>Hello,</p><p>Your free Closa Health care plan is ready. You can open it any time, and show it to a doctor.</p>'
+        . '<p>' . htmlspecialchars($hello, ENT_QUOTES, 'UTF-8') . '</p><p>Your free Closa Health care plan is ready. You can open it any time, and show it to a doctor.</p>'
         . '<p><a href="' . $safe . '" style="display:inline-block;background:#4A2545;color:#F7F6F2;padding:14px 28px;border-radius:999px;text-decoration:none;font-weight:bold">Open my care plan</a></p>'
         . '<p style="font-size:14px;color:#4a4a4a">This plan is guidance based on your answers. It is not a diagnosis. If you need urgent help, call 112 or go to the nearest hospital emergency unit.</p>'
         . '<p style="font-size:14px;color:#4a4a4a">Anyone with this link can see your plan, so please don\'t share it publicly. You can delete your saved plan from the bottom of the plan page, or reply to this email and we will do it for you.</p>'
@@ -36,15 +37,15 @@ function mail_address(string $from): string
 }
 
 // Returns true if the message was handed over to a mail system.
-function send_plan_email(string $to, string $link): bool
+function send_plan_email(string $to, string $link, ?string $name = null): bool
 {
     $c = config();
     $from = $c['mail_from'];
-    $m = plan_message($to, $link);
+    $m = plan_message($to, $link, $name);
     try {
         switch ($c['mail_transport']) {
             case 'file':
-                file_put_contents($c['mail_file'], json_encode(['to' => $to, 'link' => $link, 'body' => $m['body']]) . "\n", FILE_APPEND);
+                file_put_contents($c['mail_file'], json_encode(['to' => $to, 'name' => $name, 'link' => $link, 'body' => $m['body']]) . "\n", FILE_APPEND);
                 return true;
             case 'smtp':
                 $raw = "From: $from\r\nTo: $to\r\nSubject: {$m['subject']}\r\nDate: " . date('r')

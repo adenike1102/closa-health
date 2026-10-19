@@ -29,12 +29,13 @@ If you change `frontend/src/lib/questions.js`, run `node scripts/export_schema.m
 ## API
 | Route | What |
 |---|---|
-| `POST /api/plans` | `{email, consent, ttc_consent, answers}` → `201 {token}`; emails `https://closahealth.com/plan/<token>`. 422 on bad input, 429 after 10/hour per IP |
+| `POST /api/plans` | `{email, name?, consent, ttc_consent, launch_optin, answers, sid?, outcome?}` → `201 {token}`; emails `https://closahealth.com/plan/<token>`. 422 on bad input, 429 after 10/hour per IP |
 | `GET /api/plans/{token}` | `{email, answers, created_at}` or 404 |
 | `DELETE /api/plans/{token}` | 204 or 404 |
 | `GET /api/providers?city=&cat=` | `{providers, fallback}` (city: Lagos, Abuja, Port Harcourt, Oyo State; cat: gp, gyn, lab, haem, fp, fert) |
-| `POST /api/events` | 204. `plan_action` / `directions_tap`, no personal data stored |
+| `POST /api/events` | 204. Anonymous usage events (visits, question views, taps...) with a random visitor code. No personal data stored |
 | `GET /api/health` | `{status: "ok"}`; also checks the database opens |
+| `/api/admin/...` | The dashboard (login, stats, contacts). See "Dashboard" below |
 
 Privacy rules built in: pregnancy answers (Q16, T1–T3) are dropped before saving unless `ttc_consent`; analytics never store the token or email; the emailed link always uses the configured `base_url`, never the request's Host header.
 
@@ -63,6 +64,24 @@ Where things live: the website and the `api/` folder go in `public_html`. The da
 **Updating later:** run the build again, upload the zip over `public_html` and extract with overwrite. Your `api/config.php` and the database are not in the zip, so they are kept.
 
 Notes: Hostinger limits how many emails a mailbox can send per hour/day, which is plenty for early use. Shared hosting can't run background workers, so the plan email is sent right after the response is returned.
+
+## Dashboard (`/admin`)
+
+A login-protected page at `https://closahealth.com/admin`. It shows **totals only** (visitors, funnel, drop-off per question, traffic sources, audience, care-plan outcomes, engagement, email health). Groups smaller than 5 people are shown as "<5".
+
+**Set it up:** open `public_html/api/config.php` and fill in two different passwords:
+```
+'admin_password'    => '...',   // opens the dashboard
+'contacts_password' => '...',   // asked for again before any email address is shown (locks after 15 minutes)
+```
+Until both are set, `/admin` shows "Dashboard not set up yet". Changing a password signs everyone out. After 6 wrong guesses in 15 minutes a person is locked out for a while. (If you prefer not to store a plain password, use `admin_password_hash` / `contacts_password_hash` with the output of PHP's `password_hash()` instead.)
+
+**Contacts tab:** names and emails, search, a **launch list** download (CSV) containing only people who ticked "Keep me updated about new features on Closa Health", and a Delete button for privacy requests. Plans a user deleted show as **Deleted** (with the date), with no name or email, because that data is removed for good. The totals keep counting them.
+
+**Campaign links:** add tags to the end of any link you share or advertise, for example
+`https://closahealth.com/?utm_source=instagram&utm_medium=paid&utm_campaign=launch`. The dashboard's "Where visitors come from" table then shows visitors, people who started and plans made for each one.
+
+**Privacy notes:** visits use a random code per browser tab (never linked to an email); nothing is tracked if the visitor has Do Not Track or Global Privacy Control on; no IP addresses are stored beyond 2 hours (for rate limiting). The care plan is worked out in the browser, which sends a small anonymous summary (age band, concerns, urgency, flags) that is kept even after a plan is deleted.
 
 ## Before launch (from the handoff)
 Clinical review of all plan copy; verify landing stats and the 33-entry provider directory (`api/data/providers.json`, read on every request: edit and re-upload that one file to update it); legal review of `frontend/public/privacy.html` (draft) and a monitored `privacy@closahealth.com`; cervical-screening age (spec 25 vs. intake band 20–34).

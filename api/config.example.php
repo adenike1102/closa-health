@@ -10,4 +10,11 @@ return [
     'smtp_secure'    => 'ssl',
     'smtp_user'      => 'hello@closahealth.com',
     'smtp_password'  => 'the mailbox password',
+
+    // The dashboard at closahealth.com/admin. Choose TWO different passwords: long, and not used anywhere else.
+    // 'admin_password'    opens the dashboard (totals only, no emails)
+    // 'contacts_password' is asked for again before any email address is shown
+    // Leave them empty and the dashboard stays switched off.
+    'admin_password'    => '',
+    'contacts_password' => '',
 ];

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { CITIES, PROV } from '../lib/data.js';
-import { getProviders, trackEvent } from '../api.js';
+import { getProviders } from '../api.js';
+import { track } from '../lib/track.js';
 import { Back } from './Icons.jsx';
 
 const mapLink = (p) => 'https://maps.google.com/?q=' + encodeURIComponent(p.name + ', ' + p.address + ', Nigeria');
@@ -14,7 +15,11 @@ export default function Providers({ cat, city, setCity, onBack }) {
     let cancelled = false;
     setData((d) => ({ ...d, loading: true, failed: false }));
     getProviders(city, cat)
-      .then((r) => { if (!cancelled) setData({ loading: false, items: r.providers, fallback: r.fallback, failed: false }); })
+      .then((r) => {
+        if (cancelled) return;
+        setData({ loading: false, items: r.providers, fallback: r.fallback, failed: false });
+        track('provider_view', { category: cat, city });
+      })
       .catch(() => { if (!cancelled) setData({ loading: false, items: [], fallback: false, failed: true }); });
     return () => { cancelled = true; };
   }, [city, cat]);
@@ -53,7 +58,7 @@ export default function Providers({ cat, city, setCity, onBack }) {
               </div>
               {p.note && <p>{p.note}</p>}
               <span className="addr">{p.address}</span>
-              <a className="btn btn-outline" href={mapLink(p)} target="_blank" rel="noopener noreferrer" onClick={() => trackEvent('directions_tap', { category: cat, city })}>Get directions</a>
+              <a className="btn btn-outline" href={mapLink(p)} target="_blank" rel="noopener noreferrer" onClick={() => track('directions_tap', { category: cat, city })}>Get directions</a>
             </div>
           ))}
           <div className="guide">

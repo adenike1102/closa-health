@@ -1,18 +1,22 @@
-import { SYMPTOMS, REASONS, HOW, STATS } from '../lib/data.js';
+import { SYMPTOMS, SYM_TO_Q1, REASONS, HOW, STATS } from '../lib/data.js';
 import { Arrow, Check, Lock, Info, Deco } from './Icons.jsx';
 import { HeroVisual, GETS } from './Visuals.jsx';
+import { track } from '../lib/track.js';
 
 // Screen 1: the long-scroll landing page. It never mentions trying to conceive.
 export default function Landing({ pre, setPre, onStart }) {
   const picked = SYMPTOMS.filter((s) => pre[s.name]).length;
-  const toggle = (name) => setPre({ ...pre, [name]: !pre[name] });
+  const toggle = (name) => {
+    if (!pre[name]) track('symptom_pick', { step: SYM_TO_Q1[name] });
+    setPre({ ...pre, [name]: !pre[name] });
+  };
 
   return (
     <div className="screen">
       <header className="l-header">
         <div className="l-header-in">
           <img className="logo" src="/brand/lockup-aubergine.png" alt="Closa Health" />
-          <button className="nav-btn" onClick={onStart}>Get my free care plan <Arrow /></button>
+          <button className="nav-btn" onClick={() => onStart('nav')}>Get my free care plan <Arrow /></button>
         </div>
       </header>
 
@@ -22,7 +26,7 @@ export default function Landing({ pre, setPre, onStart }) {
             <h1>Years of painful symptoms. <b>One step to the right care.</b></h1>
             <p className="hero-sub pretty">A free, personalised care plan that shows you who to see, what to ask for and how soon.</p>
             <div className="hero-cta">
-              <button className="btn btn-lg" onClick={onStart}>Get my free care plan <Arrow /></button>
+              <button className="btn btn-lg" onClick={() => onStart('hero')}>Get my free care plan <Arrow /></button>
               <span>About 5 minutes</span>
             </div>
           </div>
@@ -52,7 +56,7 @@ export default function Landing({ pre, setPre, onStart }) {
           </div>
           {picked > 0 && (
             <div className="pre-cta">
-              <button className="btn btn-light" onClick={onStart}>
+              <button className="btn btn-light" onClick={() => onStart('symptoms')}>
                 Start my plan with {picked === 1 ? 'this' : 'these ' + picked} <Arrow color="#4A2545" />
               </button>
               <span>You’re not alone in this.</span>
@@ -130,7 +134,7 @@ export default function Landing({ pre, setPre, onStart }) {
           <Deco size={520} stroke={5} style={{ right: -200, bottom: -220 }} />
           <h2 className="h2-xl">You’ve waited long enough.</h2>
           <p>Take a few minutes for yourself today, and leave with a clear next step.</p>
-          <button className="btn btn-lg btn-light" onClick={onStart}>Get my free care plan <Arrow color="#4A2545" /></button>
+          <button className="btn btn-lg btn-light" onClick={() => onStart('closing')}>Get my free care plan <Arrow color="#4A2545" /></button>
         </div>
       </section>
 

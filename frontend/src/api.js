@@ -23,15 +23,3 @@ export const deletePlan = (token) => request('/plans/' + encodeURIComponent(toke
 
 export const getProviders = (city, cat) =>
   request('/providers?city=' + encodeURIComponent(city) + '&cat=' + encodeURIComponent(cat));
-
-// Fire-and-forget analytics on action taps. Failures are ignored on purpose.
-export function trackEvent(name, detail = {}) {
-  try {
-    fetch('/api/events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, ...detail }),
-      keepalive: true,
-    }).catch(() => {});
-  } catch (e) { /* ignore */ }
-}

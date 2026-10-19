@@ -9,6 +9,7 @@ declare(strict_types=1);
  *   GET    /api/providers        provider directory, filtered by city and category
  *   POST   /api/events           anonymous analytics on action taps
  *   GET    /api/health           uptime check
+ *   /api/admin/...               the dashboard (two passwords, see lib/admin.php)
  *
  * There are no accounts: the email is the identity, and the long random token in the link is
  * what lets someone open a plan. The care plan itself is worked out in the browser from the
@@ -21,6 +22,8 @@ require __DIR__ . '/lib/config.php';
 require __DIR__ . '/lib/db.php';
 require __DIR__ . '/lib/answers.php';
 require __DIR__ . '/lib/mailer.php';
+require __DIR__ . '/lib/admin.php';
+require __DIR__ . '/lib/stats.php';
 
 const RATE_LIMIT = 10;      // plans per IP per hour
 const RATE_WINDOW = 3600;
@@ -62,15 +65,9 @@ function now(): string
 // Stops the email form being used to spam people: 10 saved plans per IP per hour.
 function check_rate_limit(PDO $pdo): void
 {
-    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
-    $t = time();
-    $pdo->prepare('DELETE FROM rate_hits WHERE at < ?')->execute([$t - RATE_WINDOW]);
-    $count = $pdo->prepare('SELECT COUNT(*) FROM rate_hits WHERE ip = ? AND at >= ?');
-    $count->execute([$ip, $t - RATE_WINDOW]);
-    if ((int) $count->fetchColumn() >= RATE_LIMIT) {
+    if (!rate_ok($pdo, $_SERVER['REMOTE_ADDR'] ?? 'unknown', RATE_LIMIT, RATE_WINDOW)) {
         fail(429, 'Too many requests. Please try again later.');
     }
-    $pdo->prepare('INSERT INTO rate_hits (ip, at) VALUES (?, ?)')->execute([$ip, $t]);
 }
 
 // ---------- routes ----------
@@ -83,13 +80,19 @@ function create_plan(): never
             throw new InvalidArgumentException('Consent is required');
         }
         $ttcConsent = ($body['ttc_consent'] ?? false);
-        if (!is_bool($ttcConsent)) {
-            throw new InvalidArgumentException('ttc_consent must be true or false');
+        $launchOptin = ($body['launch_optin'] ?? false);
+        if (!is_bool($ttcConsent) || !is_bool($launchOptin)) {
+            throw new InvalidArgumentException('ttc_consent and launch_optin must be true or false');
         }
+        $name = clean_name($body['name'] ?? null);
         $answers = clean_answers($body['answers'] ?? null);
     } catch (InvalidArgumentException $e) {
         fail(422, $e->getMessage());
     }
+    // These only feed the dashboard, so a problem with them never stops a plan being saved.
+    $sid = clean_sid($body['sid'] ?? null);
+    $outcome = clean_outcome($body['outcome'] ?? null);
+
     $pdo = db();
     check_rate_limit($pdo);
     if (!$ttcConsent) {
@@ -98,8 +101,13 @@ function create_plan(): never
         }
     }
     $token = rtrim(strtr(base64_encode(random_bytes(24)), '+/', '-_'), '=');
-    $pdo->prepare('INSERT INTO plans (token, email, answers, ttc_saved, created_at) VALUES (?, ?, ?, ?, ?)')
-        ->execute([$token, $email, json_encode($answers), (int) $ttcConsent, now()]);
+    $when = now();
+    $pdo->prepare('INSERT INTO plans (token, email, name, answers, ttc_saved, launch_optin, mail_status, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)')
+        ->execute([$token, $email, $name, json_encode($answers), (int) $ttcConsent, (int) $launchOptin, 'pending', $when]);
+    $planId = (int) $pdo->lastInsertId();
+    insert_plan_stats($pdo, $answers, $outcome, $when);
+    $pdo->prepare('INSERT INTO events (name, sid, created_at) VALUES (?, ?, ?)')->execute(['plan_created', $sid, $when]);
 
     // Answer the browser first, then send the email, so she isn't kept waiting.
     http_response_code(201);
@@ -109,28 +117,33 @@ function create_plan(): never
     } elseif (function_exists('litespeed_finish_request')) {
         litespeed_finish_request();
     }
-    send_plan_email($email, rtrim(config()['base_url'], '/') . '/plan/' . $token);
+    $sent = send_plan_email($email, rtrim(config()['base_url'], '/') . '/plan/' . $token, $name);
+    $pdo->prepare('UPDATE plans SET mail_status = ? WHERE id = ?')->execute([$sent ? 'sent' : 'failed', $planId]);
     exit;
 }
 
 function get_plan(string $token): never
 {
-    $st = db()->prepare('SELECT email, answers, created_at FROM plans WHERE token = ?');
+    $st = db()->prepare('SELECT email, name, answers, created_at FROM plans WHERE token = ? AND deleted_at IS NULL');
     $st->execute([$token]);
     $row = $st->fetch();
     if (!$row) {
         fail(404, 'Plan not found');
     }
-    respond(200, ['email' => $row['email'], 'answers' => json_decode($row['answers'], true), 'created_at' => $row['created_at']]);
+    respond(200, ['email' => $row['email'], 'name' => $row['name'], 'answers' => json_decode($row['answers'], true), 'created_at' => $row['created_at']]);
 }
 
 function delete_plan(string $token): never
 {
-    $st = db()->prepare('DELETE FROM plans WHERE token = ?');
+    $pdo = db();
+    $st = $pdo->prepare('SELECT id FROM plans WHERE token = ? AND deleted_at IS NULL');
     $st->execute([$token]);
-    if ($st->rowCount() === 0) {
+    $id = $st->fetchColumn();
+    if ($id === false) {
         fail(404, 'Plan not found');
     }
+    tombstone_plan($pdo, (int) $id); // wipes email, name and answers; keeps only "deleted on <date>"
+    $pdo->prepare('INSERT INTO events (name, created_at) VALUES (?, ?)')->execute(['plan_delete', now()]);
     respond(204);
 }
 
@@ -171,6 +184,11 @@ function list_providers(): never
 function record_event(): never
 {
     $b = read_json();
+    $pdo = db();
+    // Generous limit per IP, only to stop someone flooding the numbers.
+    if (!rate_ok($pdo, 'ev:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 600, 600)) {
+        fail(429, 'Too many requests.');
+    }
     $name = $b['name'] ?? null;
     if (!is_string($name) || !in_array($name, EVENT_NAMES, true)) {
         fail(422, 'Unknown event');
@@ -187,11 +205,113 @@ function record_event(): never
     if ($source !== null && !is_string($source)) {
         fail(422, 'Invalid source');
     }
+    $step = $b['step'] ?? null;
+    if ($step !== null && (!is_string($step) || !preg_match('/^[A-Za-z0-9_]{1,16}$/', $step))) {
+        fail(422, 'Invalid step');
+    }
+    $device = $b['device'] ?? null;
+    if ($device !== null && !in_array($device, ['m', 't', 'd'], true)) {
+        fail(422, 'Invalid device');
+    }
+    $sid = clean_sid($b['sid'] ?? null);
     // The token only tells us "this tap came from someone with a saved plan". It is not stored.
     $hasPlan = !empty($b['token']) ? 1 : 0;
-    db()->prepare('INSERT INTO events (name, category, source, city, has_plan, created_at) VALUES (?, ?, ?, ?, ?, ?)')
-        ->execute([$name, $category, $source !== null ? mb_substr($source, 0, 60) : null, $city, $hasPlan, now()]);
+    // A visit is counted once per anonymous code.
+    if ($name === 'session_start' && $sid !== null
+        && scalar($pdo, "SELECT COUNT(*) FROM events WHERE name = 'session_start' AND sid = ?", [$sid]) > 0) {
+        respond(204);
+    }
+    $pdo->prepare('INSERT INTO events (name, category, source, city, step, device, sid, utm_source, utm_medium, utm_campaign, referrer, has_plan, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+        ->execute([
+            $name, $category, $source !== null ? mb_substr($source, 0, 60) : null, $city, $step, $device, $sid,
+            clean_tag($b['utm_source'] ?? null), clean_tag($b['utm_medium'] ?? null), clean_tag($b['utm_campaign'] ?? null),
+            clean_tag($b['referrer'] ?? null, 100), $hasPlan, now(),
+        ]);
     respond(204);
+}
+
+// ---------- dashboard ----------
+function admin_route(string $method, string $path): void
+{
+    header('X-Robots-Tag: noindex');
+    if ($path === '/admin/login' && $method === 'POST') {
+        if (!admin_configured()) {
+            fail(503, 'The dashboard is not set up yet. Add the two dashboard passwords to api/config.php.');
+        }
+        require_admin_header();
+        $given = read_json()['password'] ?? '';
+        if (!is_string($given) || !try_login('admin', $given)) {
+            fail(401, 'That password is not right.');
+        }
+        set_cookie_token(ADMIN_COOKIE, make_token('admin', ADMIN_TTL), ADMIN_TTL);
+        respond(200, ['ok' => true]);
+    }
+    if ($path === '/admin/logout' && $method === 'POST') {
+        require_admin_header();
+        set_cookie_token(ADMIN_COOKIE, '', 0);
+        set_cookie_token(CONTACTS_COOKIE, '', 0);
+        respond(204);
+    }
+    if ($path === '/admin/session' && $method === 'GET') {
+        require_login('admin');
+        respond(200, ['ok' => true, 'contacts_unlocked' => token_ok($_COOKIE[CONTACTS_COOKIE] ?? null, 'contacts')]);
+    }
+    if ($path === '/admin/contacts/unlock' && $method === 'POST') {
+        require_login('admin');
+        require_admin_header();
+        $given = read_json()['password'] ?? '';
+        if (!is_string($given) || !try_login('contacts', $given)) {
+            fail(401, 'That password is not right.');
+        }
+        set_cookie_token(CONTACTS_COOKIE, make_token('contacts', CONTACTS_TTL), CONTACTS_TTL);
+        respond(200, ['ok' => true, 'expires_in' => CONTACTS_TTL]);
+    }
+    if ($path === '/admin/contacts/lock' && $method === 'POST') {
+        require_login('admin');
+        require_admin_header();
+        set_cookie_token(CONTACTS_COOKIE, '', 0);
+        respond(204);
+    }
+    if ($path === '/admin/stats' && $method === 'GET') {
+        require_login('admin');
+        $tz = new DateTimeZone('Africa/Lagos');
+        $today = (new DateTimeImmutable('now', $tz))->format('Y-m-d');
+        $to = $_GET['to'] ?? $today;
+        $from = $_GET['from'] ?? (new DateTimeImmutable($to))->modify('-29 days')->format('Y-m-d');
+        $ok = fn($d) => is_string($d) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $d) && checkdate((int) substr($d, 5, 2), (int) substr($d, 8, 2), (int) substr($d, 0, 4));
+        if (!$ok($from) || !$ok($to) || $from > $to) {
+            fail(422, 'Choose a valid date range.');
+        }
+        if ((new DateTimeImmutable($from))->diff(new DateTimeImmutable($to))->days > 365) {
+            fail(422, 'Choose a range of one year or less.');
+        }
+        respond(200, build_stats($from, $to));
+    }
+    if ($path === '/admin/contacts' && $method === 'GET') {
+        require_login('contacts');
+        $list = contacts_list(($_GET['optin'] ?? '') === '1', is_string($_GET['q'] ?? null) ? trim($_GET['q']) : '');
+        respond(200, ['contacts' => $list, 'limit_reached' => count($list) >= 2000]);
+    }
+    if ($path === '/admin/contacts.csv' && $method === 'GET') {
+        require_login('contacts');
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="closa-launch-list-' . gmdate('Y-m-d') . '.csv"');
+        echo launch_list_csv();
+        exit;
+    }
+    if (preg_match('#^/admin/contacts/(\d+)$#', $path, $m) && $method === 'DELETE') {
+        require_login('contacts');
+        require_admin_header();
+        $pdo = db();
+        if (scalar($pdo, 'SELECT COUNT(*) FROM plans WHERE id = ? AND deleted_at IS NULL', [(int) $m[1]]) === 0) {
+            fail(404, 'Contact not found');
+        }
+        tombstone_plan($pdo, (int) $m[1]);
+        $pdo->prepare('INSERT INTO events (name, created_at) VALUES (?, ?)')->execute(['plan_delete', now()]);
+        respond(204);
+    }
+    fail(404, 'Not found');
 }
 
 // ---------- dispatch ----------
@@ -200,6 +320,9 @@ try {
     $path = rtrim((string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH), '/');
     $path = preg_replace('#^/api#', '', $path) ?? '';
 
+    if (str_starts_with($path, '/admin/')) {
+        admin_route($method, $path);
+    }
     if ($path === '/health' && $method === 'GET') {
         // Also proves the database can be opened, which is the first thing to check after an upload.
         if (!in_array('sqlite', PDO::getAvailableDrivers(), true)) {

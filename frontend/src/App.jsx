@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Landing from './components/Landing.jsx';
 import Intake from './components/Intake.jsx';
 import Email from './components/Email.jsx';
@@ -9,7 +9,9 @@ import { evaluate } from './lib/evaluate.js';
 import { arrOf } from './lib/questions.js';
 import { nextStep, backStep } from './lib/intakeFlow.js';
 import { SYMPTOMS, SYM_TO_Q1 } from './lib/data.js';
-import { savePlan, loadPlan, deletePlan, trackEvent } from './api.js';
+import { savePlan, loadPlan, deletePlan } from './api.js';
+import { track, startSession, getSid, trackingAllowed } from './lib/track.js';
+import { outcomeSummary } from './lib/outcome.js';
 
 const STORE_KEY = 'closa:v1';
 
@@ -17,11 +19,11 @@ const initial = {
   screen: 'landing', // landing | intake | email | plan | providers
   qid: 'Q0', hist: [], emergency: false,
   answers: {}, upload: null, pre: {},
-  email: '', consent: false, ttcConsent: false,
+  email: '', name: '', consent: false, ttcConsent: false, launchOptin: false,
   activeCat: 'gyn', city: 'Lagos', token: null,
 };
 
-// Keeps an in-progress intake across a page refresh. The email and consent are never stored here.
+// Keeps an in-progress intake across a page refresh. The email, name and consents are never stored here.
 function restore() {
   try {
     const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
@@ -50,21 +52,36 @@ export default function App() {
   useEffect(() => {
     if (!linkToken) return;
     loadPlan(linkToken)
-      .then((r) => { patch({ answers: r.answers, email: r.email, token: linkToken, screen: 'plan' }); setLinkState('none'); })
+      .then((r) => { patch({ answers: r.answers, email: r.email, name: r.name || '', token: linkToken, screen: 'plan' }); setLinkState('none'); })
       .catch(() => setLinkState('missing'));
   }, [linkToken, patch]);
 
   // Remember progress for refreshes.
   useEffect(() => {
     try {
-      const { email, consent, ttcConsent, upload, ...keep } = s;
+      const { email, name, consent, ttcConsent, launchOptin, upload, ...keep } = s;
       sessionStorage.setItem(STORE_KEY, JSON.stringify(keep));
     } catch (e) { /* storage may be blocked; the app works without it */ }
   }, [s]);
 
   useEffect(() => { window.scrollTo(0, 0); }, [s.screen, s.qid, s.emergency]);
 
-  const start = () => {
+  // ---- anonymous usage statistics (see lib/track.js) ----
+  useEffect(() => { startSession(); }, []);
+  const prevScreen = useRef(null);
+  useEffect(() => {
+    if (s.screen === 'intake' && !s.emergency) track('question_view', { step: s.qid });
+    if (s.screen === 'intake' && s.emergency) {
+      (s.answers.Q0 || []).filter((c) => c !== 'none').forEach((c) => track('safety_screen', { source: c }));
+    }
+    if (s.screen === 'email') track('email_view');
+    if (s.screen === 'plan' && prevScreen.current !== 'providers') track('plan_view', { source: linkToken ? 'link' : 'new' });
+    prevScreen.current = s.screen;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s.screen, s.qid, s.emergency]);
+
+  const start = (source) => {
+    track('cta_click', { source });
     const picked = [...new Set(SYMPTOMS.filter((x) => s.pre[x.name]).map((x) => SYM_TO_Q1[x.name]))];
     patch((prev) => ({
       screen: 'intake', qid: 'Q0', hist: [], emergency: false,
@@ -85,6 +102,7 @@ export default function App() {
     if (!f) return;
     f.text().then((txt) => {
       const r = parseCycleCsv(txt);
+      track('csv_upload', { source: r.q5 ? 'suggested' : 'none' });
       patch((prev) => {
         const A = { ...prev.answers };
         if (r.q5) A.Q5 = r.q5;
@@ -97,7 +115,10 @@ export default function App() {
   const submitEmail = async () => {
     setSaving(true); setSaveError(false);
     try {
-      const r = await savePlan({ email: s.email.trim(), consent: s.consent, ttc_consent: s.ttcConsent, answers: s.answers });
+      const r = await savePlan({
+        email: s.email.trim(), name: s.name.trim() || undefined, consent: s.consent, ttc_consent: s.ttcConsent,
+        launch_optin: s.launchOptin, answers: s.answers, sid: trackingAllowed() ? getSid() : undefined, outcome: outcomeSummary(evaluate(s.answers)),
+      });
       window.history.replaceState(null, '', '/plan/' + r.token);
       patch({ token: r.token, screen: 'plan' });
     } catch (e) {
@@ -122,7 +143,7 @@ export default function App() {
 
   const onAction = (cat, from) => {
     if (cat === 'emerg') { window.location.href = 'tel:112'; return; }
-    trackEvent('plan_action', { category: cat, source: from, token: s.token });
+    track('plan_action', { category: cat, source: from, token: s.token });
     patch({ activeCat: cat, screen: 'providers' });
   };
 
@@ -141,7 +162,7 @@ export default function App() {
 
   const hasAnswers = arrOf(s.answers, 'Q1').length > 0;
 
-  if (s.screen === 'plan' && hasAnswers) return <Plan answers={s.answers} email={s.email} canDelete={!!s.token} onAction={onAction} onDelete={onDelete} />;
+  if (s.screen === 'plan' && hasAnswers) return <Plan answers={s.answers} email={s.email} name={s.name} canDelete={!!s.token} onAction={onAction} onDelete={onDelete} />;
   if (s.screen === 'providers' && hasAnswers) {
     return <Providers cat={s.activeCat} city={s.city} setCity={(city) => patch({ city })} onBack={() => patch({ screen: 'plan' })} />;
   }
