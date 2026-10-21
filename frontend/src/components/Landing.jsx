@@ -34,9 +34,9 @@ export default function Landing({ pre, setPre, onStart }) {
       <section className="hero">
         <div className="hero-in">
           <div className="hero-text">
-            <span className="pill-note"><i><Check size={10} /></i>Free · Private · About 2 minutes</span>
+            <span className="pill-note"><i><Check size={10} /></i>Free · Private · About 3 minutes</span>
             <h1>Years of painful symptoms. <b>One step to the right care.</b></h1>
-            <p className="hero-lead">A free, personalised care plan that shows you who to see, what to ask for and how soon.</p>
+            <p className="hero-lead">Period and hormone problems are common. Clear answers aren’t. Get a free care plan in 3 minutes.</p>
             <div className="hero-cta-wrap">
               <button className="btn btn-hero" onClick={() => onStart('hero')}>Get my free care plan <i><Arrow color="#4A2545" /></i></button>
               <span className="hero-note">Guidance, not diagnosis. No card needed.</span>
@@ -209,7 +209,7 @@ export default function Landing({ pre, setPre, onStart }) {
         <div className="close-card">
           <Deco size={520} stroke={5} style={{ right: -200, bottom: -220 }} />
           <h2 className="h2-xl">You’ve waited long enough.</h2>
-          <p>Take two minutes for yourself today, and leave with a clear next step.</p>
+          <p>Take three minutes for yourself today, and leave with a clear next step.</p>
           <Cta onStart={onStart} source="closing" light className="btn btn-lg btn-light" />
         </div>
       </section>

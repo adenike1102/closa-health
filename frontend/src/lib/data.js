@@ -32,7 +32,7 @@ export const REASONS = [
 ];
 
 export const HOW = [
-  { n: '1', t: 'Answer a few questions', d: 'One at a time, in plain words, about 2 minutes. Questions that don’t apply to you are skipped.' },
+  { n: '1', t: 'Answer a few questions', d: 'One at a time, in plain words, about 3 minutes. Questions that don’t apply to you are skipped.' },
   { n: '2', t: 'Get your plan straight away', d: 'Free, made from your answers, and sent to your email so you can come back to it.' },
   { n: '3', t: 'Walk in prepared', d: 'Take your plan and doctor summary to a GP or gynaecologist you choose, with your questions ready.' },
 ];

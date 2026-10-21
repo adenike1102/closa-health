@@ -159,7 +159,7 @@ export default function App() {
       <div className="screen" style={{ alignItems: 'center', justifyContent: 'center', gap: 20, padding: 24, textAlign: 'center' }}>
         <img className="logo" src="/brand/lockup-aubergine.png" alt="Closa Health" />
         <h1 style={{ fontWeight: 400, fontSize: 28 }}>We couldn’t find that care plan.</h1>
-        <p className="small-muted" style={{ maxWidth: 420 }}>The link may be old, or the plan may have been deleted. You can make a new one in about 5 minutes.</p>
+        <p className="small-muted" style={{ maxWidth: 420 }}>The link may be old, or the plan may have been deleted. You can make a new one in about 3 minutes.</p>
         <a className="btn" href="/">Get my free care plan</a>
       </div>
     );
