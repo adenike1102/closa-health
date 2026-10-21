@@ -10,7 +10,13 @@ const anim = (name, dur, delay = 0) => `${name} ${dur}s ease-in-out ${delay}s in
 // The arched photo frame with floating chips and a sample plan card on top.
 // No photo has been supplied yet, so it shows a soft placeholder. To add one, see HERO_PHOTO in lib/data.js.
 export function HeroVisual() {
-  const chips = [['c1', 'Painful periods', 5.5, 0], ['c2', 'Heavy periods', 6.2, 0.8], ['c3', 'Irregular periods', 5.8, 1.6]];
+  const chips = [
+    ['c1', 'Energy back', 5.5, 0],
+    ['c2', 'Plans, not pains', 6.2, 0.8],
+    ['c3', 'No more surprises', 5.8, 1.6],
+    ['c4', 'Ready for baby', 6.6, 0.4],
+    ['c5', 'Girl boss all round', 6, 1.2],
+  ];
   const rows = [['Who to see', 'A gynaecologist'], ['Ask for', 'A pelvic scan'], ['How soon', 'Within 4–6 weeks']];
   return (
     <div className="arch-wrap">
