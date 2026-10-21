@@ -12,7 +12,7 @@ import pytest
 ADMIN_PW = "dash-pass-1"
 CONTACTS_PW = "contacts-pass-2"
 H = {"X-Closa-Admin": "1"}  # header the dashboard adds to every change request
-ANSWERS = {"Q1": ["pain", "heavy"], "Q2": "20_34", "Q5": "regular", "Q10": "severe", "Q14": ["none"], "Q16": "trying_now"}
+ANSWERS = {"Q1": ["less_pain", "lighter_periods"], "Q2": "20_34", "Q5": "regular", "Q10": "severe", "Q14": ["none"], "Q16": "trying_now"}
 OUTCOME = {"urgency": 4, "flags": ["F-HMB", "F-ENDO"], "who": ["gp", "gyn"], "tests": ["T-FBC"], "safety": []}
 
 
@@ -112,7 +112,7 @@ def test_plan_summary_is_anonymous_and_coarse(client, server):
     cols = [r[1] for r in db(server).execute("PRAGMA table_info(plan_stats)")]
     assert not {"email", "name", "token", "plan_id", "answers"} & set(cols)
     r = db(server).execute("SELECT age, concerns, cycle, pain, ttc, urgency, flags, who FROM plan_stats").fetchone()
-    assert r == ("20_34", '["pain","heavy"]', "regular", "severe", "trying_now", 4, '["F-HMB","F-ENDO"]', '["gp","gyn"]')
+    assert r == ("20_34", '["less_pain","lighter_periods"]', "regular", "severe", "trying_now", 4, '["F-HMB","F-ENDO"]', '["gp","gyn"]')
 
 
 def test_plan_summary_leaves_out_pregnancy_plans_without_consent(client, server):
@@ -184,9 +184,32 @@ def test_old_database_is_upgraded_without_losing_plans(make_server, tmp_path):
     assert r.status_code == 200 and r.json()["email"] == "old@example.com" and r.json()["name"] is None
     cols = {x[1] for x in sqlite3.connect(old).execute("PRAGMA table_info(plans)")}
     assert {"name", "launch_optin", "deleted_at", "mail_status"} <= cols
-    assert sqlite3.connect(old).execute("SELECT age, concerns FROM plan_stats").fetchall() == [("35_39", '["heavy"]')]  # backfilled
+    assert sqlite3.connect(old).execute("SELECT age, concerns FROM plan_stats").fetchall() == [("35_39", '["lighter_periods"]')]  # backfilled with new codes
+    assert s.client.get("/api/plans/oldtoken123456789").json()["answers"]["Q1"] == ["lighter_periods"]
     assert sqlite3.connect(old).execute("SELECT COUNT(*) FROM events").fetchone() == (1,)
     assert s.client.post("/api/plans", json=body()).status_code == 201  # and it still works afterwards
+
+
+def test_old_question_codes_are_renamed_once(make_server, tmp_path):
+    old = tmp_path / "old2.db"
+    c = sqlite3.connect(old)
+    c.executescript(
+        """CREATE TABLE plans (id INTEGER PRIMARY KEY AUTOINCREMENT, token TEXT NOT NULL UNIQUE, email TEXT NOT NULL,
+               answers TEXT NOT NULL, ttc_saved INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL);
+           INSERT INTO plans (token, email, answers, created_at) VALUES ('oldtoken-aaaaaaaaaa', 'a@example.com',
+               '{"Q1":["pain","heavy","irregular","other_bleeding","ttc"],"Q14":["pcos","fibroids"],"Q2":"20_34"}', '2026-10-01T10:00:00+00:00');"""
+    )
+    c.commit()
+    c.close()
+    s = make_server({"CLOSA_DB": str(old)})
+    a = s.client.get("/api/plans/oldtoken-aaaaaaaaaa").json()["answers"]
+    assert a["Q1"] == ["less_pain", "lighter_periods", "regular_periods", "odd_bleeding", "get_pregnant"]
+    assert a["Q14"] == ["pmos", "fibroids"] and a["Q2"] == "20_34"
+    stat = sqlite3.connect(old).execute("SELECT concerns, conditions FROM plan_stats").fetchone()
+    assert stat == ('["less_pain","lighter_periods","regular_periods","odd_bleeding","get_pregnant"]', '["pmos","fibroids"]')
+    # a second start must not touch anything again (codes that look "old" in a new plan are not valid anyway)
+    s.client.get("/api/health")
+    assert sqlite3.connect(old).execute("SELECT v FROM meta WHERE k = 'codes_v2'").fetchone() == ("1",)
 
 
 # =================== tracking events ===================
@@ -418,6 +441,7 @@ def test_stats_shape_on_an_empty_database(admin):
     r = stats(admin)
     assert r.status_code == 200
     d = r.json()
+    assert d["range"]["days"] == 30 and isinstance(d["range"]["days"], int)  # a plain number, not a list
     assert d["kpis"]["current"]["visitors"] == 0 and d["kpis"]["current"]["completion"] is None
     assert len(d["series"]) == 30 and d["funnel"][0]["count"] == 0
     assert d["audience"]["enough"] is False and d["care"]["enough"] is False
@@ -577,3 +601,42 @@ def test_engagement_and_city_demand(admin):
 def test_stats_never_contain_email_addresses(admin):
     make_plans(admin, ["20_34"] * 6)
     assert "@example.com" not in stats(admin).text
+
+
+# =================== questionnaire v2 ===================
+V2 = {"Q1": ["less_pain", "steady_mood", "get_pregnant"], "Q19": "gt3y", "Q17": ["pm_low", "pm_resolves"], "Q18": "yes", "Q20": "d3_5",
+      "Q14": ["pmos"], "Q2": "20_34", "Q5": "regular"}
+
+
+def test_new_questions_are_accepted_and_old_codes_are_not(client):
+    assert client.post("/api/plans", json=body(answers=V2)).status_code == 201
+    for bad in ({"Q1": ["pain"]}, {"Q1": ["heavy"]}, {"Q1": ["less_pain"], "Q14": ["pcos"]}, {"Q1": ["less_pain"], "Q18": "maybe"},
+                {"Q1": ["less_pain"], "Q19": "yesterday"}, {"Q1": ["less_pain"], "Q20": ["d3_5"]}):
+        assert client.post("/api/plans", json=body(answers=bad)).status_code == 422, bad
+
+
+def test_the_mood_answer_is_saved_with_the_plan_so_it_can_be_reopened(client):
+    tok = client.post("/api/plans", json=body(answers=V2)).json()["token"]
+    got = client.get(f"/api/plans/{tok}").json()["answers"]
+    assert got["Q18"] == "yes" and got["Q17"] == ["pm_low", "pm_resolves"]
+
+
+def test_the_mood_answer_never_reaches_the_statistics(client, server):
+    client.post("/api/plans", json=body(answers=V2, outcome={**OUTCOME, "flags": ["F-HMB", "F-MOODRISK"], "safety": ["mood", "s2_sudden_pain"]}))
+    con = db(server)
+    cols = [r[1] for r in con.execute("PRAGMA table_info(plan_stats)")]
+    assert "mood" not in "".join(cols) and "Q18" not in "".join(cols)
+    row = con.execute("SELECT * FROM plan_stats").fetchone()
+    assert "yes" not in [str(x) for x in row] and "F-MOODRISK" not in "".join(str(x) for x in row)
+    assert con.execute("SELECT flags, safety FROM plan_stats").fetchone() == ('["F-HMB"]', '["s2_sudden_pain"]')
+
+
+def test_new_audience_numbers(admin):
+    for i in range(6):
+        admin.client.post("/api/plans", json=body(email=f"p{i}@example.com", answers={**V2, "Q20": "d3_5" if i < 5 else "d1_2"}, outcome=OUTCOME))
+    a = stats(admin).json()["audience"]
+    assert {x["key"]: x["count"] for x in a["onset"]} == {"gt3y": 6}
+    by = {x["key"]: x for x in a["days"]}
+    assert by["d3_5"]["count"] == 5 and by["d1_2"]["small"] is True
+    assert {x["key"] for x in a["premenstrual"]} >= {"pm_low", "pm_resolves"}
+    assert "Q18" not in json.dumps(a) and '"yes"' not in json.dumps(a)

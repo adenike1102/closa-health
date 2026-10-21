@@ -2,10 +2,10 @@
 import { CONFIG, AGES, ageAtLeast, ageBelow } from './config.js';
 import { arrOf, QUESTIONS, QMAP, optOf, youOf, joinAnd } from './questions.js';
 import { CONTENT } from './content.js';
-const CLIN = ['F-PREG', 'F-ENDOMRISK', 'F-PCB', 'F-INFECT', 'F-ANAEMIA', 'F-BLEEDDIS', 'F-FIBROID', 'F-ENDO', 'F-ADENO', 'F-SECDYSM', 'F-HMB', 'F-BULK', 'F-IMB', 'F-POI', 'F-PRIMAMEN', 'F-AMEN', 'F-ASHERMAN', 'F-PRL', 'F-PCOS', 'F-THY', 'F-HYPO', 'F-PERI', 'F-OLIGO', 'F-FREQ', 'F-CONTRA', 'F-PRIMDYSM', 'F-POSTPARTUM'];
-const U4F = ['F-HMB', 'F-FIBROID', 'F-ADENO', 'F-SECDYSM', 'F-ENDO', 'F-BLEEDDIS', 'F-IMB', 'F-AMEN', 'F-POI', 'F-PRIMAMEN', 'F-ASHERMAN', 'F-ANAEMIA', 'F-INFECT'];
-const U5F = ['F-PCOS', 'F-OLIGO', 'F-FREQ', 'F-THY', 'F-PERI', 'F-HYPO', 'F-PRIMDYSM', 'F-CONTRA'];
-const CAT_ACTION = { emerg: 'Call 112', lab: 'Find a lab', gp: 'Find a GP', gyn: 'Find a gynaecologist', haem: 'Find a sickle cell or blood clinic', fp: 'Find a family planning clinic', fert: 'Find a fertility clinic' };
+const CLIN = ['F-PREG', 'F-ENDOMRISK', 'F-PCB', 'F-INFECT', 'F-ANAEMIA', 'F-BLEEDDIS', 'F-FIBROID', 'F-ENDO', 'F-ADENO', 'F-PMDD', 'F-SECDYSM', 'F-HMB', 'F-BULK', 'F-IMB', 'F-POI', 'F-PRIMAMEN', 'F-AMEN', 'F-ASHERMAN', 'F-PRL', 'F-PMOS', 'F-THY', 'F-HYPO', 'F-PERI', 'F-OLIGO', 'F-FREQ', 'F-CONTRA', 'F-PMS', 'F-PRIMDYSM', 'F-POSTPARTUM'];
+const U4F = ['F-HMB', 'F-FIBROID', 'F-ADENO', 'F-SECDYSM', 'F-ENDO', 'F-BLEEDDIS', 'F-IMB', 'F-AMEN', 'F-POI', 'F-PRIMAMEN', 'F-ASHERMAN', 'F-ANAEMIA', 'F-INFECT', 'F-PMDD'];
+const U5F = ['F-PMOS', 'F-OLIGO', 'F-FREQ', 'F-THY', 'F-PERI', 'F-HYPO', 'F-PRIMDYSM', 'F-CONTRA', 'F-PMS'];
+const CAT_ACTION = { own: '', emerg: 'Call 112', lab: 'Find a lab', gp: 'Find a GP', gyn: 'Find a gynaecologist', haem: 'Find a sickle cell or blood clinic', fp: 'Find a family planning clinic', fert: 'Find a fertility clinic' };
 
 function evaluate(A) {
   const has = (q, c) => arrOf(A, q).includes(c);
@@ -30,8 +30,8 @@ function evaluate(A) {
   set('F-AMEN', A.Q5 === 'none_3m' && !on('F-POSTPARTUM'), ['Q5.none_3m']);
   set('F-ASHERMAN', A.Q6 === 'yes_not_bf' && A.Q5 === 'none_3m', ['Q6.yes_not_bf', 'Q5.none_3m']);
   const cyc = on('F-OLIGO') || on('F-AMEN'), cycE = [...ev('F-OLIGO'), ...ev('F-AMEN')];
-  const pcE = [...anyOf('Q12', ['hair_acne', 'dark_skin', 'weight_change']), ...anyOf('Q14', ['pcos'])];
-  set('F-PCOS', cyc && pcE.length, [cycE, pcE]);
+  const pcE = [...anyOf('Q12', ['hair_acne', 'dark_skin', 'weight_change', 'weight_resistant']), ...anyOf('Q14', ['pmos'])];
+  set('F-PMOS', cyc && pcE.length, [cycE, pcE]);
   const prE = [...anyOf('Q12', ['nipple_milk']), ...anyOf('Q13', ['headache_vision', 'mental_health_meds'])];
   set('F-PRL', cyc && prE.length, [cycE, prE]);
   const thE = [...anyOf('Q12', ['thyroid_sx']), ...anyOf('Q14', ['thyroid'])];
@@ -43,8 +43,14 @@ function evaluate(A) {
   set('F-PERI', peri, ['Q2.' + A.Q2, ev('F-OLIGO'), ev('F-FREQ'), anyOf('Q12', ['hot_flushes'])]);
   set('F-POI', cyc && has('Q12', 'hot_flushes') && ageBelow(A.Q2, CONFIG.POI_BELOW_AGE_BAND), [cycE, 'Q12.hot_flushes']);
   const emA = ageAtLeast(A.Q2, CONFIG.ENDOMRISK_MIN_AGE_BAND) && (on('F-IMB') || on('F-HMB'));
-  const emB = on('F-PCOS') && on('F-AMEN');
-  set('F-ENDOMRISK', emA || emB, emA ? ['Q2.' + A.Q2, ev('F-IMB'), ev('F-HMB')] : [ev('F-PCOS')]);
+  const emB = on('F-PMOS') && on('F-AMEN');
+  const emC = A.Q2 === '40_44' && A.Q19 === 'lt3m' && (on('F-IMB') || on('F-HMB'));
+  set('F-ENDOMRISK', emA || emB || emC, emA ? ['Q2.' + A.Q2, ev('F-IMB'), ev('F-HMB')] : emC ? ['Q2.40_44', 'Q19.lt3m', ev('F-IMB'), ev('F-HMB')] : [ev('F-PMOS')]);
+  const pmMood = anyOf('Q17', ['pm_mood', 'pm_low']);
+  set('F-PMDD', pmMood.length && has('Q17', 'pm_impact') && has('Q17', 'pm_resolves'), [pmMood, 'Q17.pm_impact', 'Q17.pm_resolves']);
+  const pmAny = anyOf('Q17', ['pm_mood', 'pm_low', 'pm_physical']);
+  set('F-PMS', pmAny.length && has('Q17', 'pm_resolves') && !on('F-PMDD'), [pmAny, 'Q17.pm_resolves']);
+  const moodRisk = A.Q18 === 'yes';
   const inE = [...anyOf('Q12', ['discharge', 'fever_pain']), ...(has('Q14', 'pid_sti') && A.Q10 && A.Q10 !== 'none' ? ['Q14.pid_sti'] : [])];
   set('F-INFECT', inE.length, [inE]);
   const anE = anyOf('Q8', ['fatigue', 'dizzy', 'pica']);
@@ -61,10 +67,11 @@ function evaluate(A) {
   set('F-PRIMDYSM', isIn('Q10', ['mild', 'moderate']) && q11.length === 1 && q11[0] === 'none', ['Q10.' + A.Q10]);
   const M = {
     SICKLE: has('Q14', 'sickle_cell'), NORMALISED: has('Q15', 'told_normal') && (on('F-HMB') || on('F-SECDYSM') || on('F-ANAEMIA')),
-    ROUNDS: has('Q15', 'many_visits'), DONE: has('Q15', 'had_scan') || has('Q15', 'had_bloods'), IMPACT: A.Q10 === 'severe' || has('Q11', 'disabling'),
+    ROUNDS: has('Q15', 'many_visits'), DONE: has('Q15', 'had_scan') || has('Q15', 'had_bloods'), IMPACT: A.Q10 === 'severe' || has('Q11', 'disabling') || isIn('Q20', ['d3_5', 'd5p']), ONTREATMENT: has('Q15', 'on_treatment'), MOODRISK: moodRisk,
     FERTGOAL: isIn('Q16', ['trying_now', 'within_12m', 'later']), TTC: isIn('Q16', ['trying_now', 'within_12m'])
   };
   const anyClin = CLIN.filter(f => f !== 'F-POSTPARTUM' && f !== 'F-PREG').some(on);
+  M.LONGSTANDING = isIn('Q19', ['gt3y', 'since_first']) && anyClin;
   // urgency
   let U = 6, uKey = null;
   const raise = l => { if (l < U) U = l; };
@@ -80,12 +87,14 @@ function evaluate(A) {
   if (U === 6) { U = 5; uKey = 'reassure'; }
   if (U === 5 && M.IMPACT) { U = 4; uKey = null; }
   if (on('F-POSTPARTUM') && !anyClin && U >= 5) { U = 5; uKey = 'postpartum'; }
+  if (M.MOODRISK && U > 2) { U = 2; uKey = 'mood'; }
   const flagLevel = f => {
     if (f === 'F-INFECT') return has('Q12', 'fever_pain') ? 2 : 4;
     if (f === 'F-HMB') return has('Q8', 'dizzy') ? 2 : 4;
     if (f === 'F-PCB' || f === 'F-ENDOMRISK') return 3;
     if (f === 'F-PRL') return has('Q13', 'headache_vision') ? 3 : 5;
     if (f === 'F-BULK') return (ageAtLeast(A.Q2, '45_54') || has('Q12', 'weight_change')) ? 3 : 4;
+    if (f === 'F-PMDD') return 4;
     return U4F.includes(f) ? 4 : 5;
   };
   const prio = f => CLIN.indexOf(f);
@@ -106,7 +115,7 @@ function evaluate(A) {
   add(on('F-ADENO'), ['F-ADENO'], 'A gynaecologist', 'gyn', 'A pelvic scan by an experienced sonographer');
   add(on('F-BLEEDDIS'), ['F-BLEEDDIS'], 'A GP for first blood tests', 'gp', 'A haematologist (blood specialist)');
   add(M.SICKLE && anyClin, CLIN.filter(on), 'Your usual sickle cell clinic', 'haem', 'A gynaecologist who works with your haematologist');
-  add(on('F-PCOS'), ['F-PCOS'], 'A GP for first blood tests', 'gp', M.TTC ? 'A gynaecologist or endocrinologist (hormone specialist), and a fertility specialist' : 'A gynaecologist or endocrinologist (hormone specialist)');
+  add(on('F-PMOS'), ['F-PMOS'], 'A GP for first blood tests', 'gp', M.TTC ? 'A gynaecologist or endocrinologist (hormone specialist), and a fertility specialist' : 'A gynaecologist or endocrinologist (hormone specialist)');
   add(on('F-THY'), ['F-THY'], 'A GP for a thyroid test', 'gp', 'An endocrinologist if the result is abnormal');
   add(on('F-PRL'), ['F-PRL'], 'A GP for a prolactin test', 'gp', 'An endocrinologist if it’s raised');
   add(on('F-POI'), ['F-POI'], 'A gynaecologist', 'gyn', M.FERTGOAL ? 'A fertility specialist, promptly' : null);
@@ -117,9 +126,12 @@ function evaluate(A) {
   add(on('F-CONTRA'), ['F-CONTRA'], 'A family planning clinic, or whoever gave you your contraception', 'fp', null);
   add(on('F-PRIMAMEN'), ['F-PRIMAMEN'], 'A gynaecologist', 'gyn', null);
   add(on('F-ASHERMAN'), ['F-ASHERMAN'], 'A gynaecologist', 'gyn', 'One who performs hysteroscopy');
+  add(on('F-PMDD'), ['F-PMDD'], 'A GP', 'gp', 'A gynaecologist, and a psychiatrist or psychologist if mood symptoms are severe');
+  if (M.MOODRISK) sp.push({ stop: 'A doctor or mental health professional within 1–2 days', cat: 'gp', asks: ['A support line now if you feel unsafe'], level: 2, prio: -1, fors: ['Your mood'] });
+  if (M.ONTREATMENT) sp.push({ stop: 'The doctor already treating you, with your plan and summary', cat: 'own', asks: ['The specialists below, if your treatment isn’t helping'], level: 1.5, prio: -2, fors: ['Your current treatment'] });
   const onlyPrim = on('F-PRIMDYSM') && CLIN.filter(f => f !== 'F-PRIMDYSM' && f !== 'F-PREG' && f !== 'F-POSTPARTUM').every(f => !on(f));
   add(onlyPrim, ['F-PRIMDYSM'], 'A pharmacist or GP', 'gp', 'A gynaecologist if it’s no better after 3 months');
-  const ttc3 = A.Q16 === 'trying_now' && (ageAtLeast(A.Q2, CONFIG.TTC_NO_WAIT_AGE_BAND) || ['F-OLIGO', 'F-AMEN', 'F-PCOS', 'F-ENDO', 'F-FIBROID', 'F-POI'].some(on) || M.SICKLE || has('Q14', 'pid_sti') || has('T3', 'ectopic') || A.T2 === 'abnormal');
+  const ttc3 = A.Q16 === 'trying_now' && (ageAtLeast(A.Q2, CONFIG.TTC_NO_WAIT_AGE_BAND) || ['F-OLIGO', 'F-AMEN', 'F-PMOS', 'F-ENDO', 'F-FIBROID', 'F-POI'].some(on) || M.SICKLE || has('Q14', 'pid_sti') || has('T3', 'ectopic') || A.T2 === 'abnormal');
   if (ttc3 && (on('F-POI') || ageAtLeast(A.Q2, '40_44'))) sp.push({ stop: 'A fertility specialist', cat: 'fert', asks: [], level: 4, prio: 50, fors: ['Trying to conceive'] });
   if (M.ROUNDS) sp.forEach(x => { if (x.cat === 'gp') { x.stop = 'A gynaecologist'; x.cat = 'gyn'; x.asks = ['A consultant gynaecologist at a teaching or specialist hospital']; } });
   if (!sp.length) sp.push({ stop: 'A GP or general hospital doctor', cat: 'gp', asks: [], level: 5, prio: 99, fors: ['A routine check'] });
@@ -134,8 +146,8 @@ function evaluate(A) {
   t('T-FBC', on('F-HMB') || on('F-ANAEMIA')); t('T-FERR', on('F-HMB') || on('F-ANAEMIA'));
   t('T-TFT', ['F-THY', 'F-OLIGO', 'F-AMEN', 'F-FREQ', 'F-POI'].some(on));
   t('T-PRL', ['F-AMEN', 'F-OLIGO', 'F-PRL'].some(on)); t('T-FSH', ['F-AMEN', 'F-OLIGO', 'F-POI'].some(on));
-  t('T-ANDRO', on('F-PCOS')); t('T-METAB', on('F-PCOS')); t('T-PROG', M.TTC && (on('F-OLIGO') || on('F-PCOS')));
-  t('T-USS', ['F-FIBROID', 'F-BULK', 'F-ADENO', 'F-SECDYSM', 'F-ENDO', 'F-IMB', 'F-AMEN', 'F-PCOS', 'F-ASHERMAN', 'F-ENDOMRISK'].some(on) || q0.includes('s5_postmeno_bleed'));
+  t('T-ANDRO', on('F-PMOS')); t('T-METAB', on('F-PMOS')); t('T-PROG', M.TTC && (on('F-OLIGO') || on('F-PMOS')));
+  t('T-USS', ['F-FIBROID', 'F-BULK', 'F-ADENO', 'F-SECDYSM', 'F-ENDO', 'F-IMB', 'F-AMEN', 'F-PMOS', 'F-ASHERMAN', 'F-ENDOMRISK'].some(on) || q0.includes('s5_postmeno_bleed'));
   t('T-STI', ['F-INFECT', 'F-IMB', 'F-PCB'].some(on)); t('T-EXAM', ['F-PCB', 'F-IMB', 'F-INFECT'].some(on));
   t('T-CERV', (on('F-PCB') || on('F-IMB')) && ageAtLeast(A.Q2, CONFIG.CERV_MIN_AGE_BAND));
   t('T-COAG', on('F-BLEEDDIS')); t('T-GENO', (M.TTC || on('F-ANAEMIA')) && !M.SICKLE);
@@ -172,18 +184,20 @@ function evaluate(A) {
   if (M.SICKLE) notes.push(CONTENT.notes.sickle);
   if (M.ROUNDS) notes.push(CONTENT.notes.rounds);
   if (on('F-POSTPARTUM')) notes.push(CONTENT.notes.postpartum);
+  if (M.ONTREATMENT) notes.push(CONTENT.notes.current_treatment);
+  if (M.LONGSTANDING) notes.push(CONTENT.notes.longstanding);
   // doctor summary
   const cl = (q) => arrOf(A, q).filter(c => c !== 'none').map(c => optOf(q, c)?.clin).filter(Boolean).join(', ');
   const semi = (...qs) => qs.map(cl).filter(Boolean).join('; ');
   const parts = [];
   if (A.Q2) parts.push(optOf('Q2', A.Q2).clin + ' woman.');
   const pushP = (label, val) => { if (val) parts.push(label + ': ' + val + '.'); };
-  pushP('Main concerns', cl('Q1')); pushP('Periods', cl('Q5')); pushP('Bleeding', semi('Q7', 'Q9')); pushP('Pain', A.Q10 && A.Q10 !== 'none' ? semi('Q10', 'Q11') : '');
-  pushP('Other symptoms', semi('Q8', 'Q12', 'Q13')); pushP('Known conditions', cl('Q14')); pushP('Contraception', A.Q4 && A.Q4 !== 'none' ? cl('Q4') : ''); pushP('Previous care', cl('Q15'));
+  pushP('Main concerns', [cl('Q1'), A.Q19 ? 'started ' + cl('Q19') : ''].filter(Boolean).join('; ')); pushP('Periods', cl('Q5')); pushP('Bleeding', semi('Q7', 'Q9')); pushP('Pain', A.Q10 && A.Q10 !== 'none' ? semi('Q10', 'Q11') : '');
+  pushP('Premenstrual', cl('Q17')); pushP('Other symptoms', semi('Q8', 'Q12', 'Q13')); pushP('Days affected per month', cl('Q20')); pushP('Known conditions', cl('Q14')); pushP('Contraception', A.Q4 && A.Q4 !== 'none' ? cl('Q4') : ''); pushP('Previous care', cl('Q15'));
   pushP('Pregnancy plans', [cl('Q16'), A.T1 ? 'trying for ' + cl('T1') : ''].filter(Boolean).join('; '));
   const banners = q0.map(c => ({ code: c, ...CONTENT.q0[c] }));
+  if (M.MOODRISK || A.Q18 === 'prefer_not') banners.push({ code: 'mood', u1: false, ...CONTENT.support.mood });
   const urg = uKey ? CONTENT.urgency[uKey] : CONTENT.urgency[U];
   return { F, M, U, urgency: { level: U, label: urg.label, body: urg.body }, banners, pregFirst: on('F-PREG') && U !== 1, possibilities, reassure: !poss.length, notes, who, tests, bringReports: M.DONE, maySuggest, questions, warnings, selfcare, ttc, showTtc: M.TTC, summary: parts.join(' ') };
 }
-
 export { evaluate, CAT_ACTION };

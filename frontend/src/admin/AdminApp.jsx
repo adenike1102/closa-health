@@ -5,10 +5,12 @@ import { num, pct, lagosToday, addDays, shortDate, longDate } from './format.js'
 import { Tile, LineChart, BarList, Funnel, PLUM, AMBER } from './charts.jsx';
 import { QUESTIONS, optOf } from '../lib/questions.js';
 import { CONTENT } from '../lib/content.js';
+import { GOALS } from '../lib/data.js';
 
 const WHO = { gp: 'GP or general hospital', gyn: 'Gynaecologist', lab: 'Lab or testing clinic', haem: 'Sickle cell or blood clinic', fp: 'Family planning clinic', fert: 'Fertility clinic', emerg: 'Emergency care' };
-const SOURCES = { hero: 'Top of the page', nav: 'Menu button', symptoms: 'After picking symptoms', closing: 'Bottom of the page' };
-const SYMPTOM = { pain: 'Painful periods', heavy: 'Heavy periods', irregular: 'Irregular or missed periods', ttc: 'Trying to get pregnant' };
+const SOURCES = { hero: 'Top of the page', nav: 'Menu button', goals: 'After picking goals', example: 'Under the example plan', closing: 'Bottom of the page', symptoms: 'After picking symptoms (old page)' };
+// Goal cards on the landing page. The older symptom cards are kept so earlier counts still have a name.
+const GOAL = { ...Object.fromEntries(GOALS.map((g) => [g.key, g.name])), pain: 'Painful periods (old card)', heavy: 'Heavy periods (old card)', irregular: 'Irregular or missed periods (old card)', ttc: 'Trying to get pregnant (old card)' };
 const DEVICE = { m: 'Phone', t: 'Tablet', d: 'Computer', '?': 'Unknown' };
 const TABS = ['Overview', 'Funnel', 'Audience', 'Care plans', 'Engagement', 'Health & future', 'Contacts'];
 
@@ -119,7 +121,7 @@ function FunnelTab({ d }) {
           <p className="ad-note">For ads, add <code>?utm_source=instagram&amp;utm_medium=paid&amp;utm_campaign=launch</code> to the end of your link. The three words are yours to choose.</p>
         </Section>
         <Section title="Devices"><BarList rows={plain(d.devices, (k) => DEVICE[k] || k)} total={d.devices.reduce((a, x) => a + x.n, 0)} /></Section>
-        <Section title="Symptom cards picked on the landing page"><BarList rows={plain(d.symptoms, (k) => SYMPTOM[k] || k)} /></Section>
+        <Section title="Goals picked on the landing page"><BarList rows={plain(d.symptoms, (k) => GOAL[k] || k)} /></Section>
         <Section title="Which button starts the questions"><BarList rows={plain(d.cta, (k) => SOURCES[k] || k)} /></Section>
       </div>
     </>
@@ -139,7 +141,10 @@ function AudienceTab({ d }) {
       <Gate d={g}>
         <div className="ad-grid2">
           <Section title="Age"><BarList rows={rowsOf(a.age, q('Q2'))} total={a.n} /></Section>
-          <Section title="What bothers them most" note="People can pick more than one."><BarList rows={rowsOf(a.concerns, q('Q1'))} total={a.n} /></Section>
+          <Section title="What they want help with" note="People can pick up to three."><BarList rows={rowsOf(a.concerns, q('Q1'))} total={a.n} /></Section>
+          <Section title="When it started"><BarList rows={rowsOf(a.onset, q('Q19'))} total={a.n} empty="Asked since the questionnaire update." /></Section>
+          <Section title="Days a month it gets in the way"><BarList rows={rowsOf(a.days, q('Q20'))} total={a.n} empty="Asked since the questionnaire update." /></Section>
+          <Section title="Before their period" note="Symptoms in the week before a period. People can tick more than one."><BarList rows={rowsOf(a.premenstrual, q('Q17'))} total={a.n} empty="Asked since the questionnaire update." /></Section>
           <Section title="How often periods come"><BarList rows={rowsOf(a.cycle, q('Q5'))} total={a.n} /></Section>
           <Section title="Worst pain"><BarList rows={rowsOf(a.pain, q('Q10'))} total={a.n} /></Section>
           <Section title="Contraception"><BarList rows={rowsOf(a.contraception, q('Q4'))} total={a.n} /></Section>

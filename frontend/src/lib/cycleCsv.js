@@ -21,5 +21,4 @@ function parseCycleCsv(text) {
   else if (sorted[sorted.length - 1] - sorted[0] > 7) q5 = 'unpredictable';
   return { q5, cycles: recent.length, spotting, message: 'We found ' + recent.length + ' periods in the last 6 months. Your periods seem to come: ' + optOf('Q5', q5).label.toLowerCase() + '.' };
 }
-
 export { parseCycleCsv };

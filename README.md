@@ -83,5 +83,13 @@ Until both are set, `/admin` shows "Dashboard not set up yet". Changing a passwo
 
 **Privacy notes:** visits use a random code per browser tab (never linked to an email); nothing is tracked if the visitor has Do Not Track or Global Privacy Control on; no IP addresses are stored beyond 2 hours (for rate limiting). The care plan is worked out in the browser, which sends a small anonymous summary (age band, concerns, urgency, flags) that is kept even after a plan is deleted.
 
+## Landing page and questionnaire (v2)
+The landing copy, goal cards, questionnaire (`frontend/src/lib/questions.js`), plan content (`content.js`) and rules engine (`evaluate.js`) follow the v2 design handoff. The things you are most likely to edit:
+- **Hero photo:** none has been supplied, so the arched frame shows a soft placeholder. To add one, copy the file to `frontend/public/brand/hero-photo.jpg` and set `HERO_PHOTO` in `frontend/src/lib/data.js` (the file explains how, including the alt text). Only use a photo you have written permission to use.
+- **Landing text, statistics and FAQ:** `frontend/src/lib/data.js` and `frontend/src/components/Landing.jsx`.
+- **Mood support helplines:** `CONTENT.support.mood` in `frontend/src/lib/content.js`. Call each number to confirm it works before launch.
+- **Saved plans from before v2** are upgraded automatically the first time the new API runs (old first-question answers and "PCOS" are renamed).
+- The answer to the mood safety question (Q18) is saved with the plan so the support message shows when it is reopened, and is never included in dashboard statistics.
+
 ## Before launch (from the handoff)
 Clinical review of all plan copy; verify landing stats and the 33-entry provider directory (`api/data/providers.json`, read on every request: edit and re-upload that one file to update it); legal review of `frontend/public/privacy.html` (draft) and a monitored `privacy@closahealth.com`; cervical-screening age (spec 25 vs. intake band 20–34).

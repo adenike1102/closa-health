@@ -1,43 +1,54 @@
-// Static copy for the landing page and the providers screen.
+// Static copy for the landing page and the providers screen (final copy from the v2 handoff).
 // The provider directory itself lives in the API folder (api/data/providers.json).
 
 export const CITIES = ['Lagos', 'Abuja', 'Port Harcourt', 'Oyo State'];
 
-// Landing symptom cards -> the Q1 answer code they pre-fill.
-export const SYM_TO_Q1 = {
-  'Painful periods': 'pain',
-  'Heavy periods': 'heavy',
-  'Irregular periods': 'irregular',
-  'Missing periods': 'irregular',
-  'Trying to conceive': 'ttc',
-};
+// The hero photo (a Nigerian woman, warm and calm). None has been supplied yet, so a soft placeholder is shown.
+// To add one: put the file in the site's brand folder (frontend/public/brand/hero-photo.jpg), then replace null with
+//   { src: '/brand/hero-photo.jpg', alt: 'A short description of the photo' }
+// Only use a photo you have written permission to use, and keep the file small for mobile data.
+export const HERO_PHOTO = null;
 
-export const SYMPTOMS = [
-  { name: 'Painful periods', feel: 'Curled up with a hot water bottle, cancelling plans, taking painkillers that barely touch it. Month after month.' },
-  { name: 'Heavy periods', feel: 'Doubling up on pads, setting alarms in the night, planning your day around the nearest toilet.' },
-  { name: 'Irregular periods', feel: 'Never knowing when it will come. Weeks early, months late, and no one can tell you why.' },
-  { name: 'Missing periods', feel: 'Months without a period, and a quiet worry about what it means for your body.' }
+// Goal cards on the landing page. `codes` are the answers they pre-fill in the first question (max 3 are used).
+// `key` is the anonymous tag sent to the dashboard when a card is picked.
+export const GOALS = [
+  { key: 'less_pain', name: 'I want my life back from period pain', feel: 'No more curling up with a hot water bottle, cancelling plans, or taking painkillers that barely touch it.', codes: ['less_pain'] },
+  { key: 'regular_periods', name: 'I want my cycle to make sense', feel: 'Weeks early, months late, or not at all, and no one can tell you why.', codes: ['regular_periods'] },
+  { key: 'get_pregnant', name: 'I want to get pregnant', feel: 'Months of trying and hoping, and questions you’re tired of answering.', codes: ['get_pregnant'] },
+  { key: 'more_energy', name: 'I want my energy and mood back', feel: 'Tired all the time, and a week every month when you don’t feel like yourself.', codes: ['more_energy', 'steady_mood'] },
+  { key: 'weight_skin_hair', name: 'I want to feel at home in my body', feel: 'Weight that won’t shift, skin or hair changes, and a sense your hormones are working against you.', codes: ['weight_skin_hair'] },
+  { key: 'reassurance', name: 'I want to stop worrying', feel: 'A quiet fear that something more serious is going on, and no one to ask.', codes: ['reassurance'] },
 ];
+
 export const REASONS = [
-  { n: '01', t: 'It gets called normal.', d: 'Many of us were told period pain is just part of being a woman, so we learn to put up with it.' },
-  { n: '02', t: 'Symptoms are seen one at a time.', d: 'Pain, bleeding and tiredness are often treated separately, so the bigger picture is missed.' },
-  { n: '03', t: 'It’s hard to know who to see.', d: 'GP, gynaecologist or another specialist. Without a clear path, it’s easy to give up.' },
-  { n: '04', t: 'The first door isn’t clear.', d: 'It’s hard to know where to start, and seeing a specialist who understands can be costly and confusing.' }
-];
-export const HOW = [
-  { n: '1', t: 'Answer a few questions', d: 'Short questions about your symptoms, one at a time. About five minutes.' },
-  { n: '2', t: 'Get your care plan', d: 'Free and made for you, in plain language you can come back to.' },
-  { n: '3', t: 'Take it to the right person', d: 'Book or contact a provider near you, with your questions ready.' }
+  { n: '01', t: 'You were told it’s normal.', d: 'So you learned to push through, month after month.' },
+  { n: '02', t: 'Your symptoms were seen one at a time.', d: 'Pain here, heavy bleeding there, tiredness somewhere else. No one joined the dots.' },
+  { n: '03', t: 'You didn’t know who to see.', d: 'GP, gynaecologist, or someone else? Without a clear path, it’s easy to give up.' },
+  { n: '04', t: 'Every visit cost time and money.', d: 'And sometimes you still left without answers.' },
 ];
 
-// Stats on the landing page. Nigeria first. The clinical team must verify these before launch.
+export const HOW = [
+  { n: '1', t: 'Answer a few questions', d: 'One at a time, in plain words, about 2 minutes. Questions that don’t apply to you are skipped.' },
+  { n: '2', t: 'Get your plan straight away', d: 'Free, made from your answers, and sent to your email so you can come back to it.' },
+  { n: '3', t: 'Walk in prepared', d: 'Take your plan and doctor summary to a GP or gynaecologist you choose, with your questions ready.' },
+];
+
+// Three statistics, each linked to its source. The sources were supplied with the handoff; they have not been
+// re-checked here, so the clinical team should confirm each figure and link before launch.
 export const STATS = [
-  { value: '45%', text: 'of Nigerian women in a community study had fibroids when scanned. Many had never been told.', source: 'ACCME cohort, central Nigeria', bg: '#E7DCE4' },
-  { value: '3×', text: 'Black women are about three times more likely to have fibroids, often earlier and with worse symptoms.', source: 'Lagos fibroid study, 2021', bg: '#EFE6EB' },
-  { value: '58%', text: 'of Nigerian women of reproductive age are anaemic. Heavy periods are a common, overlooked cause.', source: 'Nigeria DHS, 2023', bg: '#F0E7DD' },
-  { value: '190 million', text: 'women and girls worldwide are estimated to live with endometriosis. That’s about 1 in 10.', source: 'World Health Organization', bg: '#EFE6EB' },
-  { value: '7–9 years', text: 'is the average wait from first symptoms to an endometriosis diagnosis.', source: 'npj Women’s Health, 2024', bg: '#F0E7DD' },
-  { value: 'Up to 70%', text: 'of women with PCOS worldwide don’t know they have it.', source: 'World Health Organization', bg: '#E4E8E1' },
+  { value: '5–12 years', text: 'is how long women wait from first symptoms to an endometriosis diagnosis, across studies worldwide.', source: 'Source: BJOG systematic review, 2025', href: 'https://doi.org/10.1111/1471-0528.17973', bg: '#E7DCE4' },
+  { value: '47%', text: 'of Nigerian women of reproductive age are anaemic. Heavy periods are a common, overlooked cause.', source: 'Source: Nigeria DHS, 2024', href: 'https://dhsprogram.com/pubs/pdf/SR294/SR294.pdf', bg: '#F0E7DD' },
+  { value: 'Up to 70%', text: 'of women with PMOS (previously PCOS) don’t know they have it.', source: 'Source: World Health Organization', href: 'https://www.who.int/news-room/fact-sheets/detail/polycystic-ovary-syndrome', bg: '#E4E8E1' },
+];
+
+export const FAQS = [
+  ['Is it really free?', 'Yes. Your care plan is free, and you don’t need a card.'],
+  ['Is this a diagnosis?', 'No. Your plan shows what your symptoms may point to and how to get properly checked. Only a doctor who examines and tests you can diagnose you.'],
+  ['Who wrote the questions?', 'They are based on established clinical guidance.'],
+  ['What happens to my answers?', 'They are used to build your plan and kept securely. We never sell them. We’ll only email you about new features if you tick the box to say yes.'],
+  ['I’ve already seen a doctor. Will this still help?', 'Yes. Tell us what’s been done, and your plan suggests what to ask for next, rather than starting again.'],
+  ['What if my symptoms are serious?', 'The first questions check for warning signs. If anything needs urgent care, your plan tells you straight away. If you feel very unwell now, call 112 or go to the nearest hospital emergency unit.'],
+  ['Do I need to know medical words?', 'No. Everything is in plain language, and your plan includes a summary in doctors’ words for you to show them.'],
 ];
 
 // What the providers screen says for each plan category. Order of the keys matters to nobody.

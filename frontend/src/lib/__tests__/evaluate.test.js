@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 import { evaluate } from '../evaluate.js';
 
 // A "nothing to report" baseline; each test overrides only what it needs.
-const base = { Q0: ['none'], Q1: ['pain'], Q2: '20_34', Q3: 'no', Q4: 'none', Q5: 'regular', Q7: ['none'], Q9: ['none'], Q10: 'none', Q12: ['none'], Q14: ['none'], Q15: ['none'], Q16: 'not_planning' };
+const base = { Q0: ['none'], Q1: ['less_pain'], Q2: '20_34', Q3: 'no', Q4: 'none', Q5: 'regular', Q7: ['none'], Q9: ['none'], Q10: 'none', Q12: ['none'], Q14: ['none'], Q15: ['none'], Q16: 'not_planning' };
 const run = (over = {}) => evaluate({ ...base, ...over });
 const flags = (P) => Object.keys(P.F).filter((k) => P.F[k].on);
 const testIds = (P) => P.tests.map((t) => t.id);
@@ -59,10 +59,11 @@ describe('flags (section 3)', () => {
     expect(flags(run({ Q10: 'mild', Q11: ['none'] }))).toContain('F-PRIMDYSM');
     expect(flags(run({ Q10: 'severe', Q11: ['none'] }))).not.toContain('F-PRIMDYSM');
   });
-  it('F-PCOS from irregular periods plus hair/acne, dark skin, weight change or a PCOS diagnosis', () => {
-    expect(flags(run({ Q5: 'infrequent', Q12: ['hair_acne'] }))).toContain('F-PCOS');
-    expect(flags(run({ Q5: 'infrequent', Q14: ['pcos'] }))).toContain('F-PCOS');
-    expect(flags(run({ Q5: 'regular', Q12: ['hair_acne'] }))).not.toContain('F-PCOS');
+  it('F-PMOS from irregular periods plus hair/acne, dark skin, weight change or a PMOS diagnosis', () => {
+    expect(flags(run({ Q5: 'infrequent', Q12: ['hair_acne'] }))).toContain('F-PMOS');
+    expect(flags(run({ Q5: 'infrequent', Q12: ['weight_resistant'] }))).toContain('F-PMOS');
+    expect(flags(run({ Q5: 'infrequent', Q14: ['pmos'] }))).toContain('F-PMOS');
+    expect(flags(run({ Q5: 'regular', Q12: ['hair_acne'] }))).not.toContain('F-PMOS');
   });
   it('F-POI only below 40', () => {
     const a = { Q5: 'none_3m', Q12: ['hot_flushes'] };

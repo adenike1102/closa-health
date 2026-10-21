@@ -9,7 +9,7 @@ import pytest
 
 API_DIR = Path(__file__).resolve().parent.parent
 REPO = API_DIR.parent
-VALID_ANSWERS = {"Q0": ["none"], "Q1": ["pain", "heavy"], "Q2": "20_34", "Q3": "no", "Q16": "trying_now", "T1": "lt6m"}
+VALID_ANSWERS = {"Q0": ["none"], "Q1": ["less_pain", "lighter_periods"], "Q2": "20_34", "Q3": "no", "Q16": "trying_now", "T1": "lt6m"}
 
 
 def make_body(**over):
@@ -86,14 +86,14 @@ def test_create_plan_requires_consent(client):
         {},
         {"Q2": "20_34"},  # no Q1 concerns
         {"Q1": []},
-        {"Q1": ["pain"], "Q99": "x"},  # unknown question
+        {"Q1": ["less_pain"], "Q99": "x"},  # unknown question
         {"Q1": ["made_up"]},  # unknown option
-        {"Q1": "pain"},  # multi question given a string
-        {"Q1": ["pain"], "Q2": ["20_34"]},  # single question given a list
-        {"Q1": ["pain"], "Q2": "not_an_age"},
-        {"Q1": [["pain"]]},
-        {"Q1": ["pain"], "Q2": 5},
-        "pain",
+        {"Q1": "less_pain"},  # multi question given a string
+        {"Q1": ["less_pain"], "Q2": ["20_34"]},  # single question given a list
+        {"Q1": ["less_pain"], "Q2": "not_an_age"},
+        {"Q1": [["less_pain"]]},
+        {"Q1": ["less_pain"], "Q2": 5},
+        "less_pain",
         None,
     ],
 )
@@ -107,15 +107,15 @@ def test_create_plan_rejects_non_json(client):
 
 
 def test_create_plan_removes_duplicate_options(client):
-    token = client.post("/api/plans", json=make_body(answers={"Q1": ["pain", "pain", "heavy"]})).json()["token"]
-    assert client.get(f"/api/plans/{token}").json()["answers"]["Q1"] == ["pain", "heavy"]
+    token = client.post("/api/plans", json=make_body(answers={"Q1": ["less_pain", "less_pain", "lighter_periods"]})).json()["token"]
+    assert client.get(f"/api/plans/{token}").json()["answers"]["Q1"] == ["less_pain", "lighter_periods"]
 
 
 def test_pregnancy_plans_not_stored_without_extra_consent(client, server):
     token = client.post("/api/plans", json=make_body(ttc_consent=False)).json()["token"]
     answers = client.get(f"/api/plans/{token}").json()["answers"]
     assert "Q16" not in answers and "T1" not in answers
-    assert answers["Q1"] == ["pain", "heavy"]  # everything else is kept
+    assert answers["Q1"] == ["less_pain", "lighter_periods"]  # everything else is kept
     # really gone from the database, not just hidden
     stored, saved = rows(server, "SELECT answers, ttc_saved FROM plans")[0]
     assert "trying_now" not in stored and saved == 0
@@ -166,12 +166,12 @@ def test_get_plan_unknown_token_404(client):
 
 
 def test_plans_are_private_to_their_token(client):
-    t1 = client.post("/api/plans", json=make_body(email="one@example.com", answers={"Q1": ["pain"]})).json()["token"]
-    t2 = client.post("/api/plans", json=make_body(email="two@example.com", answers={"Q1": ["heavy"]})).json()["token"]
+    t1 = client.post("/api/plans", json=make_body(email="one@example.com", answers={"Q1": ["less_pain"]})).json()["token"]
+    t2 = client.post("/api/plans", json=make_body(email="two@example.com", answers={"Q1": ["lighter_periods"]})).json()["token"]
     assert t1 != t2
     a, b = client.get(f"/api/plans/{t1}").json(), client.get(f"/api/plans/{t2}").json()
-    assert (a["email"], a["answers"]["Q1"]) == ("one@example.com", ["pain"])
-    assert (b["email"], b["answers"]["Q1"]) == ("two@example.com", ["heavy"])
+    assert (a["email"], a["answers"]["Q1"]) == ("one@example.com", ["less_pain"])
+    assert (b["email"], b["answers"]["Q1"]) == ("two@example.com", ["lighter_periods"])
     # neither an email address nor a numeric id opens a plan
     assert client.get("/api/plans/one@example.com").status_code == 404
     assert client.get("/api/plans/1").status_code == 404

@@ -13,11 +13,27 @@
   "Q1": {
     "type": "multi",
     "codes": [
-      "pain",
-      "heavy",
-      "irregular",
-      "other_bleeding",
-      "ttc"
+      "less_pain",
+      "regular_periods",
+      "lighter_periods",
+      "get_pregnant",
+      "steady_mood",
+      "more_energy",
+      "weight_skin_hair",
+      "changes_40s",
+      "odd_bleeding",
+      "sex_pain",
+      "reassurance"
+    ]
+  },
+  "Q19": {
+    "type": "single",
+    "codes": [
+      "lt3m",
+      "3_12m",
+      "1_3y",
+      "gt3y",
+      "since_first"
     ]
   },
   "Q2": {
@@ -121,12 +137,32 @@
       "none"
     ]
   },
+  "Q17": {
+    "type": "multi",
+    "codes": [
+      "pm_mood",
+      "pm_low",
+      "pm_physical",
+      "pm_impact",
+      "pm_resolves",
+      "none"
+    ]
+  },
+  "Q18": {
+    "type": "single",
+    "codes": [
+      "yes",
+      "no",
+      "prefer_not"
+    ]
+  },
   "Q12": {
     "type": "multi",
     "codes": [
       "hair_acne",
       "dark_skin",
       "weight_change",
+      "weight_resistant",
       "bulk",
       "hot_flushes",
       "thyroid_sx",
@@ -147,12 +183,21 @@
       "none"
     ]
   },
+  "Q20": {
+    "type": "single",
+    "codes": [
+      "d0",
+      "d1_2",
+      "d3_5",
+      "d5p"
+    ]
+  },
   "Q14": {
     "type": "multi",
     "codes": [
       "fibroids",
       "endometriosis",
-      "pcos",
+      "pmos",
       "thyroid",
       "sickle_cell",
       "pid_sti",
@@ -166,6 +211,7 @@
       "had_bloods",
       "told_normal",
       "treatment_failed",
+      "on_treatment",
       "many_visits",
       "none"
     ]

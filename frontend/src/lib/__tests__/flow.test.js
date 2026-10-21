@@ -25,7 +25,7 @@ describe('skip logic', () => {
     expect(ids({ Q16: 'trying_now' })).toEqual(expect.arrayContaining(['T1', 'T2', 'T3']));
   });
   it('asks about anaemia symptoms when periods are heavy', () => {
-    expect(ids({ Q1: ['heavy'] })).toContain('Q8');
+    expect(ids({ Q1: ['lighter_periods'] })).toContain('Q8');
   });
 });
 

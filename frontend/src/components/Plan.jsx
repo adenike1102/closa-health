@@ -2,8 +2,10 @@ import { useMemo, useState } from 'react';
 import { evaluate, CAT_ACTION } from '../lib/evaluate.js';
 import { CONTENT } from '../lib/content.js';
 import { optOf, arrOf } from '../lib/questions.js';
+import { visibleAnswers } from '../lib/intakeFlow.js';
 import { Arrow, Check, Info, Warn, Deco, PlanIcons } from './Icons.jsx';
 import { track } from '../lib/track.js';
+import PhoneText from './PhoneText.jsx';
 
 const SCALE = ['Emergency', '1–2 days', '2 weeks', '4–6 weeks', 'Routine'];
 
@@ -44,7 +46,7 @@ function printSummary(text) {
 
 // Screen 4: the care plan, built from her answers by the rules engine.
 export default function Plan({ answers, email, name, canDelete, onAction, onDelete }) {
-  const P = useMemo(() => evaluate(answers), [answers]);
+  const P = useMemo(() => evaluate(visibleAnswers(answers)), [answers]);
   const [asked, setAsked] = useState({});
   const [copied, setCopied] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -120,7 +122,7 @@ export default function Plan({ answers, email, name, canDelete, onAction, onDele
                   <a className="call-btn" href="tel:112">Call 112</a>
                 </div>
               ) : (
-                <div key={b.code} className="banner-book"><h2>{b.title}</h2><p>{b.body}</p></div>
+                <div key={b.code} className="banner-book"><h2>{b.title}</h2><p><PhoneText text={b.body} /></p></div>
               ))}
             </div>
           )}
@@ -173,6 +175,7 @@ export default function Plan({ answers, email, name, canDelete, onAction, onDele
                   <span className="grow" />
                   {w.cat === 'emerg'
                     ? <a className="btn btn-act btn-ink" href="tel:112">Call 112</a>
+                    : w.cat === 'own' ? null // "the doctor already treating you" has no provider list
                     : <ActionButton label={CAT_ACTION[w.cat]} onClick={go(w.cat, 'who')} />}
                 </div>
               ))}

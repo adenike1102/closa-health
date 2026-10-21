@@ -158,7 +158,7 @@ function build_stats(string $from, string $to): array
     // Audience + care plan outcomes: from the anonymous plan_stats rows (these stay when someone deletes a plan)
     $stat = rows($pdo, "SELECT * FROM plan_stats WHERE $in", $b);
     $n = count($stat);
-    $age = $concerns = $cycle = $pain = $contra = $cond = $hist = $ttc = [];
+    $age = $concerns = $cycle = $pain = $contra = $cond = $hist = $ttc = $onset = $daysHit = $pm = [];
     $urg = $flags = $who = $tests = $safety = [];
     $withOutcome = 0;
     foreach ($stat as $r) {
@@ -170,6 +170,9 @@ function build_stats(string $from, string $to): array
         tally(json_decode($r['conditions'] ?: '[]', true), $cond);
         tally(json_decode($r['history'] ?: '[]', true), $hist);
         tally([$r['ttc']], $ttc);
+        tally([$r['onset'] ?? null], $onset);
+        tally([$r['days'] ?? null], $daysHit);
+        tally(json_decode($r['premenstrual'] ?: '[]', true), $pm);
         if ($r['urgency'] !== null) {
             $withOutcome++;
             tally([(string) $r['urgency']], $urg);
@@ -182,11 +185,12 @@ function build_stats(string $from, string $to): array
     $enough = $n >= MIN_GROUP;
     $audience = ['n' => $n, 'enough' => $enough, 'age' => breakdown($age), 'concerns' => breakdown($concerns), 'cycle' => breakdown($cycle),
         'pain' => breakdown($pain), 'contraception' => breakdown($contra), 'conditions' => breakdown($cond),
-        'history' => breakdown($hist), 'ttc' => breakdown($ttc), 'ttc_n' => array_sum($ttc)];
+        'history' => breakdown($hist), 'ttc' => breakdown($ttc), 'ttc_n' => array_sum($ttc),
+        'onset' => breakdown($onset), 'days' => breakdown($daysHit), 'premenstrual' => breakdown($pm)];
     $care = ['n' => $withOutcome, 'enough' => $withOutcome >= MIN_GROUP, 'urgency' => breakdown($urg), 'flags' => breakdown($flags, 12),
         'who' => breakdown($who), 'tests' => breakdown($tests, 12), 'safety' => breakdown($safety)];
     if (!$enough) {
-        foreach (['age', 'concerns', 'cycle', 'pain', 'contraception', 'conditions', 'history', 'ttc'] as $k) {
+        foreach (['age', 'concerns', 'cycle', 'pain', 'contraception', 'conditions', 'history', 'ttc', 'onset', 'days', 'premenstrual'] as $k) {
             $audience[$k] = [];
         }
     }

@@ -1,48 +1,33 @@
+import { Deco } from './Icons.jsx';
 import { useMode } from '../lib/useMode.js';
+import { HERO_PHOTO } from '../lib/data.js';
 
-// Hero illustration and the four small looping animations on the landing page.
+// Hero artwork and the five small looping animations on the landing page.
 // Animations are plain CSS keyframes (see styles.css) and switch off for prefers-reduced-motion.
 
 const anim = (name, dur, delay = 0) => `${name} ${dur}s ease-in-out ${delay}s infinite`;
 
+// The arched photo frame with floating chips and a sample plan card on top.
+// No photo has been supplied yet, so it shows a soft placeholder. To add one, see HERO_PHOTO in lib/data.js.
 export function HeroVisual() {
-  const m = useMode() === 'm';
-  const chips = m
-    ? [
-        { t: 'Painful periods', s: { left: '2%', top: '2%' }, d: 5.5, dl: 0 },
-        { t: 'Heavy periods', s: { right: '2%', top: '9%' }, d: 6.2, dl: 0.8 },
-        { t: 'Irregular periods', s: { left: '4%', bottom: '8%' }, d: 5.8, dl: 1.6 },
-        { t: 'Missing periods', s: { right: '2%', bottom: '1%' }, d: 7, dl: 1.2 },
-      ]
-    : [
-        { t: 'Painful periods', s: { left: '0%', top: '10%' }, d: 5.5, dl: 0 },
-        { t: 'Heavy periods', s: { right: '0%', top: '20%' }, d: 6.2, dl: 0.8 },
-        { t: 'Irregular periods', s: { left: '2%', bottom: '18%' }, d: 5.8, dl: 1.6 },
-        { t: 'Missing periods', s: { right: '4%', bottom: '8%' }, d: 6.6, dl: 0.4 },
-      ];
-  const rows = ['What it may point to', 'Who to see', 'What to ask', 'What to watch for'];
-  const tints = ['#EFE6EB', '#E7DCE4', '#F0E7DD', '#E4E8E1'];
-  const mark = m ? 300 : 400;
+  const chips = [['c1', 'Painful periods', 5.5, 0], ['c2', 'Heavy periods', 6.2, 0.8], ['c3', 'Irregular periods', 5.8, 1.6]];
+  const rows = [['Who to see', 'A gynaecologist'], ['Ask for', 'A pelvic scan'], ['How soon', 'Within 4–6 weeks']];
   return (
-    <div className="hv" aria-hidden="true">
-      <div className="hv-circle" />
-      <svg className="hv-mark" width={mark} height={mark} viewBox="0 0 180 180" fill="none" stroke="#D8C6D1" strokeWidth="5">
-        <path d="M40 70A62 62 0 1 1 40 110" /><path d="M0 90h90" />
-      </svg>
-      <div className="hv-center">
-        <div className="hv-card">
-          <div className="hv-card-head">
-            <span>Your care plan</span>
-            <img src="/brand/app-icon-aubergine.png" alt="" width="24" height="24" style={{ borderRadius: 7 }} />
-          </div>
-          {rows.map((r, i) => (
-            <div key={r} className="hv-row" style={{ background: tints[i] }}><i>{i + 1}</i>{r}</div>
+    <div className="arch-wrap">
+      <div className="arch">
+        {HERO_PHOTO
+          ? <img src={HERO_PHOTO.src} alt={HERO_PHOTO.alt} />
+          : <div className="ph" aria-hidden="true"><Deco size={260} color="#D8C6D1" stroke={4} style={{ position: 'static' }} /></div>}
+      </div>
+      <div className="hero-over" aria-hidden="true">
+        {chips.map(([c, t, d, dl]) => <span key={t} className={'hchip ' + c} style={{ animation: anim('clFloat', d, dl) }}>{t}</span>)}
+        <div className="hplan" style={{ animation: anim('clFloat', 6.5, 0.3) }}>
+          <div className="hplan-top"><span>Your care plan</span><span className="hplan-dot" /></div>
+          {rows.map(([k, v], i) => (
+            <div key={k} className="hplan-row" style={{ animation: anim('clRow', 6, i * 0.5) }}><small>{k}</small><b>{v}</b></div>
           ))}
         </div>
       </div>
-      {chips.map((c) => (
-        <span key={c.t} className="hv-chip" style={{ ...c.s, animation: anim('clFloat', c.d, c.dl) }}>{c.t}</span>
-      ))}
     </div>
   );
 }
@@ -71,7 +56,7 @@ const Who = () => (
   </div>
 );
 
-// 03 What to ask: chat bubble + typing dots
+// 03 What to ask for: chat bubble + typing dots
 const Ask = () => (
   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-start' }}>
     <div style={{ background: '#F7F6F2', borderRadius: '16px 16px 16px 4px', padding: '8px 14px', fontSize: 13, color: '#4A2545', fontWeight: 500 }}>Which tests do I need?</div>
@@ -92,9 +77,20 @@ const Watch = () => (
   </div>
 );
 
+// 05 A summary for your doctor: a floating document
+const Summary = () => (
+  <div style={{ width: 104, background: '#F7F6F2', borderRadius: 12, padding: '12px 12px 14px', display: 'flex', flexDirection: 'column', gap: 7, boxShadow: '0 10px 24px rgba(74,37,69,.15)', animation: anim('clFloat', 5) }}>
+    <span style={{ width: 40, height: 6, borderRadius: 3, background: '#4A2545' }} />
+    {[78, 64, 72, 46].map((w, i) => <span key={i} style={{ width: w, height: 5, borderRadius: 3, background: '#D8C6D1', animation: anim('clRow', 4.8, i * 0.4) }} />)}
+  </div>
+);
+
 export const GETS = [
-  { n: '01', t: 'What it may point to', d: 'Possible causes in plain language, with the answers that led to each one.', bg: '#EFE6EB', visual: <Point /> },
-  { n: '02', t: 'Who to see', d: 'The right kind of clinician, how soon to be seen, and providers near you.', bg: '#E7DCE4', visual: <Who /> },
-  { n: '03', t: 'What to ask', d: 'The tests and questions to take to your appointment, plus a summary for your doctor.', bg: '#F0E7DD', visual: <Ask /> },
-  { n: '04', t: 'What to watch for', d: 'What to track, and the warning signs that need urgent care.', bg: '#E4E8E1', visual: <Watch /> },
+  { n: '01', t: 'What it may point to', d: 'Possible causes in plain words, and the answers that led to each one.', bg: '#EFE6EB', visual: <Point /> },
+  { n: '02', t: 'Who to see, and how soon', d: 'The right kind of doctor for your symptoms, and whether you should go this week or book a routine appointment.', bg: '#E7DCE4', visual: <Who /> },
+  { n: '03', t: 'What to ask for', d: 'The tests and questions to take to your appointment, and when to do each test.', bg: '#F0E7DD', visual: <Ask /> },
+  { n: '04', t: 'What to watch for', d: 'The warning signs that mean you should get help quickly.', bg: '#E4E8E1', visual: <Watch /> },
+  { n: '05', t: 'A summary for your doctor', d: 'Your story, already written in the words doctors use, so you’re heard from the first minute.', bg: '#EFE6EB', visual: <Summary /> },
 ];
+
+export { useMode };

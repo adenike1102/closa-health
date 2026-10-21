@@ -7,8 +7,9 @@ import Providers from './components/Providers.jsx';
 import { parseCycleCsv } from './lib/cycleCsv.js';
 import { evaluate } from './lib/evaluate.js';
 import { arrOf } from './lib/questions.js';
-import { nextStep, backStep } from './lib/intakeFlow.js';
-import { SYMPTOMS, SYM_TO_Q1 } from './lib/data.js';
+import { nextStep, backStep, visibleAnswers, validAnswers } from './lib/intakeFlow.js';
+import { QMAP } from './lib/questions.js';
+import { GOALS } from './lib/data.js';
 import { savePlan, loadPlan, deletePlan } from './api.js';
 import { track, startSession, getSid, trackingAllowed } from './lib/track.js';
 import { outcomeSummary } from './lib/outcome.js';
@@ -29,7 +30,10 @@ function restore() {
     const saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
     if (!saved) return initial;
     const screen = saved.screen === 'providers' ? 'plan' : saved.screen;
-    return { ...initial, ...saved, screen, upload: null };
+    // Progress saved before the questionnaire changed may use answers we no longer recognise.
+    const answers = validAnswers(saved.answers);
+    const qid = QMAP[saved.qid] || saved.qid === 'UP' ? saved.qid : 'Q0';
+    return { ...initial, ...saved, answers, qid, hist: (saved.hist || []).filter((h) => QMAP[h] || h === 'UP'), screen, upload: null, pre: {} };
   } catch (e) {
     return initial;
   }
@@ -82,7 +86,8 @@ export default function App() {
 
   const start = (source) => {
     track('cta_click', { source });
-    const picked = [...new Set(SYMPTOMS.filter((x) => s.pre[x.name]).map((x) => SYM_TO_Q1[x.name]))];
+    // Goal cards fill in the first question (at most 3 answers, no repeats).
+    const picked = [...new Set(GOALS.filter((x) => s.pre[x.key]).flatMap((x) => x.codes))].slice(0, 3);
     patch((prev) => ({
       screen: 'intake', qid: 'Q0', hist: [], emergency: false,
       answers: picked.length ? { ...prev.answers, Q1: picked } : prev.answers,
@@ -117,7 +122,7 @@ export default function App() {
     try {
       const r = await savePlan({
         email: s.email.trim(), name: s.name.trim() || undefined, consent: true, // pressing "See my plan" is the agreement
-        launch_optin: s.launchOptin, answers: s.answers, sid: trackingAllowed() ? getSid() : undefined, outcome: outcomeSummary(evaluate(s.answers)),
+        launch_optin: s.launchOptin, answers: visibleAnswers(s.answers), sid: trackingAllowed() ? getSid() : undefined, outcome: outcomeSummary(evaluate(visibleAnswers(s.answers))),
       });
       window.history.replaceState(null, '', '/plan/' + r.token);
       patch({ token: r.token, screen: 'plan' });

@@ -49,3 +49,14 @@ export const Deco = ({ size, color = '#5c3557', stroke = 5, style }) => (
     <path d="M40 70A62 62 0 1 1 40 110" /><path d="M0 90h90" /><circle cx="90" cy="90" r="9" fill={color} stroke="none" />
   </svg>
 );
+
+// Landing-page extras
+export const Triangle = ({ color = '#4A2545', size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 22 22" {...base} stroke={color} strokeWidth="1.6"><path d="M11 3l9 16H2z" /><path d="M11 9v4.5M11 16v.5" /></svg>
+);
+export const CardSlash = ({ color = '#4A2545', size = 22 }) => (
+  <svg width={size} height={size} viewBox="0 0 22 22" {...base} stroke={color} strokeWidth="1.6"><rect x="2.5" y="5" width="17" height="12" rx="2" /><path d="M2.5 9.5h17M4 19L18 3" /></svg>
+);
+export const PlusMinus = ({ open }) => (
+  <svg width="14" height="14" viewBox="0 0 14 14" {...base} stroke="#4A2545" strokeWidth="1.8"><path d="M2 7h10" />{!open && <path d="M7 2v10" />}</svg>
+);

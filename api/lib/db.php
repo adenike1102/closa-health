@@ -90,7 +90,11 @@ function init_db(PDO $pdo): void
         conditions TEXT, history TEXT, ttc TEXT,
         urgency INTEGER, flags TEXT, who TEXT, tests TEXT, safety TEXT
     )');
+    add_column($pdo, 'plan_stats', 'onset', 'TEXT');          // Q19: when it started
+    add_column($pdo, 'plan_stats', 'days', 'TEXT');           // Q20: days affected per month
+    add_column($pdo, 'plan_stats', 'premenstrual', 'TEXT');   // Q17: symptoms before a period
     $pdo->exec('CREATE INDEX IF NOT EXISTS idx_stats_time ON plan_stats(created_at)');
+    $pdo->exec('CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT)');
 
     // PHP forgets everything between requests, so rate limits live in the database too.
     $pdo->exec('CREATE TABLE IF NOT EXISTS rate_hits (
@@ -98,6 +102,8 @@ function init_db(PDO $pdo): void
         at INTEGER NOT NULL
     )');
     $pdo->exec('CREATE INDEX IF NOT EXISTS idx_rate_ip ON rate_hits(ip, at)');
+
+    migrate_codes_v2($pdo);
 
     // Plans saved before plan_stats existed: build their anonymous summary once.
     if ((int) $pdo->query('SELECT COUNT(*) FROM plan_stats')->fetchColumn() === 0) {
@@ -115,10 +121,11 @@ function insert_plan_stats(PDO $pdo, array $answers, ?array $outcome, string $cr
     $one = fn($q) => isset($answers[$q]) && is_string($answers[$q]) ? $answers[$q] : null;
     $many = fn($q) => json_encode(array_values(array_filter((array) ($answers[$q] ?? []), fn($c) => $c !== 'none')));
     $pdo->prepare('INSERT INTO plan_stats
-        (created_at, age, concerns, contraception, cycle, pain, conditions, history, ttc, urgency, flags, who, tests, safety)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute([
+        (created_at, age, concerns, contraception, cycle, pain, conditions, history, ttc, onset, days, premenstrual, urgency, flags, who, tests, safety)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')->execute([
         $createdAt, $one('Q2'), $many('Q1'), $one('Q4'), $one('Q5'), $one('Q10'), $many('Q14'), $many('Q15'),
         $one('Q16'), // only present when she agreed to save pregnancy plans
+        $one('Q19'), $one('Q20'), $many('Q17'), // note: the mood safety answer (Q18) is deliberately never copied here
         $outcome['urgency'] ?? null,
         $outcome ? json_encode($outcome['flags']) : null,
         $outcome ? json_encode($outcome['who']) : null,
@@ -149,4 +156,45 @@ function rate_ok(PDO $pdo, string $key, int $limit, int $window, bool $record = 
         $pdo->prepare('INSERT INTO rate_hits (ip, at) VALUES (?, ?)')->execute([$key, $t]);
     }
     return true;
+}
+
+// One-time upgrade: the first question and "PCOS" were renamed in questionnaire v2. Saved plans (and their
+// anonymous summaries) are rewritten to the new codes, so older plans still open correctly.
+function migrate_codes_v2(PDO $pdo): void
+{
+    if ($pdo->query("SELECT v FROM meta WHERE k = 'codes_v2'")->fetchColumn() !== false) {
+        return;
+    }
+    $map = [
+        'Q1' => ['pain' => 'less_pain', 'heavy' => 'lighter_periods', 'irregular' => 'regular_periods', 'other_bleeding' => 'odd_bleeding', 'ttc' => 'get_pregnant'],
+        'Q14' => ['pcos' => 'pmos'],
+    ];
+    $remap = fn(array $list, array $m) => array_values(array_unique(array_map(fn($c) => $m[$c] ?? $c, $list)));
+    $pdo->beginTransaction();
+    $upd = $pdo->prepare('UPDATE plans SET answers = ? WHERE id = ?');
+    foreach ($pdo->query('SELECT id, answers FROM plans WHERE deleted_at IS NULL')->fetchAll() as $row) {
+        $a = json_decode($row['answers'], true);
+        if (!is_array($a)) {
+            continue;
+        }
+        $changed = false;
+        foreach ($map as $q => $m) {
+            if (isset($a[$q]) && is_array($a[$q])) {
+                $new = $remap($a[$q], $m);
+                $changed = $changed || $new !== $a[$q];
+                $a[$q] = $new;
+            }
+        }
+        if ($changed) {
+            $upd->execute([json_encode($a), $row['id']]);
+        }
+    }
+    $updStat = $pdo->prepare('UPDATE plan_stats SET concerns = ?, conditions = ? WHERE id = ?');
+    foreach ($pdo->query('SELECT id, concerns, conditions FROM plan_stats')->fetchAll() as $row) {
+        $c = $remap(json_decode($row['concerns'] ?: '[]', true) ?: [], $map['Q1']);
+        $d = $remap(json_decode($row['conditions'] ?: '[]', true) ?: [], $map['Q14']);
+        $updStat->execute([json_encode($c), json_encode($d), $row['id']]);
+    }
+    $pdo->exec("INSERT INTO meta (k, v) VALUES ('codes_v2', '1')");
+    $pdo->commit();
 }

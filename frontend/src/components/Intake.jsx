@@ -2,6 +2,7 @@ import { arrOf } from '../lib/questions.js';
 import { CONTENT } from '../lib/content.js';
 import { visibleQuestions, toggleMulti } from '../lib/intakeFlow.js';
 import { Back, Check, Lock, Upload, FileIcon, Warn, Deco } from './Icons.jsx';
+import PhoneText from './PhoneText.jsx';
 
 // Shown on desktop beside the form (hidden by CSS on smaller screens).
 export function SidePanel({ kicker, title, text, note, noteIcon }) {
@@ -32,7 +33,7 @@ export default function Intake({ state, setState, onNext, onBack, onCsv }) {
 
   const choose = (code) => {
     if (isMulti) {
-      setState({ answers: { ...answers, [q.id]: toggleMulti(cur, code) } });
+      setState({ answers: { ...answers, [q.id]: toggleMulti(cur, code, q.max) } });
     } else {
       setState({ answers: { ...answers, [q.id]: code } });
       // Single choice moves on by itself after a short pause so she sees her pick.
@@ -102,8 +103,8 @@ export default function Intake({ state, setState, onNext, onBack, onCsv }) {
         ) : (
           <>
             <main className="q-main sm" style={{ gap: 16 }}>
-              {arrOf(answers, 'Q0').filter((c) => c !== 'none').map((c) => {
-                const item = CONTENT.q0[c];
+              {(qid === 'Q18' ? ['mood'] : arrOf(answers, 'Q0').filter((c) => c !== 'none')).map((c) => {
+                const item = c === 'mood' ? { ...CONTENT.support.mood, u1: false } : CONTENT.q0[c];
                 return item.u1 ? (
                   <div key={c} className="emerg-card">
                     <div className="top"><span className="emerg-icon"><Warn /></span><h2>{item.title}</h2></div>
@@ -111,7 +112,7 @@ export default function Intake({ state, setState, onNext, onBack, onCsv }) {
                     <a className="call-btn" href="tel:112">Call 112</a>
                   </div>
                 ) : (
-                  <div key={c} className="book-card"><h2>{item.title}</h2><p>{item.body}</p></div>
+                  <div key={c} className="book-card"><h2>{item.title}</h2><p><PhoneText text={item.body} /></p></div>
                 );
               })}
               <p className="small-muted" style={{ fontSize: 15 }}>This message will stay at the top of your care plan. You can carry on with the questions when you’re ready.</p>

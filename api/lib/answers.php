@@ -120,7 +120,8 @@ function clean_outcome(mixed $o): ?array
     $safetyCodes = schema()['Q0']['codes'];
     return [
         'urgency' => $o['urgency'],
-        'flags'   => $list($o['flags'] ?? [], fn($s) => (bool) preg_match('/^F-[A-Z]{2,12}$/', $s)),
+        // F-MOODRISK comes from the mood safety question; it is never kept in statistics.
+        'flags'   => $list($o['flags'] ?? [], fn($s) => $s !== 'F-MOODRISK' && (bool) preg_match('/^F-[A-Z]{2,12}$/', $s)),
         'who'     => $list($o['who'] ?? [], fn($s) => in_array($s, array_merge(CATEGORIES, ['emerg']), true)),
         'tests'   => $list($o['tests'] ?? [], fn($s) => (bool) preg_match('/^T-[A-Z]{2,12}$/', $s)),
         'safety'  => $list($o['safety'] ?? [], fn($s) => $s !== 'none' && in_array($s, $safetyCodes, true)),
