@@ -85,7 +85,7 @@ Until both are set, `/admin` shows "Dashboard not set up yet". Changing a passwo
 
 ## Landing page and questionnaire (v2)
 The landing copy, goal cards, questionnaire (`frontend/src/lib/questions.js`), plan content (`content.js`) and rules engine (`evaluate.js`) follow the v2 design handoff. The things you are most likely to edit:
-- **Hero photo:** none has been supplied, so the arched frame shows a soft placeholder. To add one, copy the file to `frontend/public/brand/hero-photo.jpg` and set `HERO_PHOTO` in `frontend/src/lib/data.js` (the file explains how, including the alt text). Only use a photo you have written permission to use.
+- **Hero photo:** `frontend/public/brand/hero-photo.jpg` (about 900px wide, ~150 KB). To change it, replace that file and update the description (alt text) in `HERO_PHOTO` in `frontend/src/lib/data.js`. Only use a photo you have written permission to use.
 - **Landing text, statistics and FAQ:** `frontend/src/lib/data.js` and `frontend/src/components/Landing.jsx`.
 - **Mood support helplines:** `CONTENT.support.mood` in `frontend/src/lib/content.js`. Call each number to confirm it works before launch.
 - **Saved plans from before v2** are upgraded automatically the first time the new API runs (old first-question answers and "PCOS" are renamed).

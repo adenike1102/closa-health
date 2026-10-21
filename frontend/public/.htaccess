@@ -35,6 +35,9 @@ Options -Indexes
   <FilesMatch "^.*\.(js|css|woff2?|png)$">
     ExpiresDefault "access plus 1 year"
   </FilesMatch>
+  <FilesMatch "^.*\.(jpe?g|webp)$">
+    ExpiresDefault "access plus 1 week"
+  </FilesMatch>
   <FilesMatch "^(index|privacy)\.html$">
     ExpiresDefault "access plus 0 seconds"
   </FilesMatch>

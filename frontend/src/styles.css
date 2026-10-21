@@ -583,3 +583,4 @@ a:hover { color: var(--ink); }
 .field .optional{font-weight:400;color:var(--muted)}
 
 .bottom-bar .agree{font-size:13px;line-height:1.45;color:var(--muted);text-align:center;margin:0;max-width:440px;text-wrap:pretty}
+@media (max-width: 699px) { .arch img { transform: scale(1.2); transform-origin: 50% 100%; } } /* phones: lift the subject above the floating plan card */

@@ -16,7 +16,7 @@ export function HeroVisual() {
     <div className="arch-wrap">
       <div className="arch">
         {HERO_PHOTO
-          ? <img src={HERO_PHOTO.src} alt={HERO_PHOTO.alt} />
+          ? <img src={HERO_PHOTO.src} alt={HERO_PHOTO.alt} width={HERO_PHOTO.width} height={HERO_PHOTO.height} fetchpriority="high" decoding="async" />
           : <div className="ph" aria-hidden="true"><Deco size={260} color="#D8C6D1" stroke={4} style={{ position: 'static' }} /></div>}
       </div>
       <div className="hero-over" aria-hidden="true">

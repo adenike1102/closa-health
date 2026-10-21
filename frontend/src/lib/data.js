@@ -3,11 +3,15 @@
 
 export const CITIES = ['Lagos', 'Abuja', 'Port Harcourt', 'Oyo State'];
 
-// The hero photo (a Nigerian woman, warm and calm). None has been supplied yet, so a soft placeholder is shown.
-// To add one: put the file in the site's brand folder (frontend/public/brand/hero-photo.jpg), then replace null with
-//   { src: '/brand/hero-photo.jpg', alt: 'A short description of the photo' }
-// Only use a photo you have written permission to use, and keep the file small for mobile data.
-export const HERO_PHOTO = null;
+// The hero photo, shown inside the arch on the landing page. To change it, replace
+// frontend/public/brand/hero-photo.jpg (about 900px wide is plenty) and update the description below.
+// Only use a photo you have written permission to use.
+export const HERO_PHOTO = {
+  src: '/brand/hero-photo.jpg',
+  alt: 'A smiling woman relaxing in a wicker armchair by a window, reading a book with a small dog resting on her lap',
+  width: 900,
+  height: 1350,
+};
 
 // Goal cards on the landing page. `codes` are the answers they pre-fill in the first question (max 3 are used).
 // `key` is the anonymous tag sent to the dashboard when a card is picked.
