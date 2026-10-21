@@ -218,11 +218,11 @@ a:hover { color: var(--ink); }
 @media (min-width: 700px) { .hchip { padding: 10px 18px; font-size: 15px; } }
 .hchip { z-index: 2; }
 /* Chip positions keep clear of her face: phones first, then tablet and desktop. */
-.hchip.c1 { left: 0; top: 4%; } .hchip.c2 { right: 0; top: 13%; } .hchip.c3 { right: 14px; top: 25%; }
-.hchip.c4 { right: 0; top: 37%; } .hchip.c5 { right: -4px; bottom: 6%; }
+.hchip.c1 { left: 0; top: 3%; } .hchip.c2 { right: 0; top: 9%; } .hchip.c3 { right: 14px; top: 20%; }
+.hchip.c4 { right: 0; top: 31%; } .hchip.c5 { right: 12px; top: 42%; } .hchip.c6 { right: -4px; bottom: 6%; }
 @media (min-width: 700px) {
-  .hchip.c1 { left: -2%; top: 6%; } .hchip.c2 { right: -2%; top: 14%; } .hchip.c3 { right: -6%; top: 30%; }
-  .hchip.c4 { right: -2%; top: 46%; } .hchip.c5 { right: -6%; bottom: 8%; }
+  .hchip.c1 { left: -2%; top: 5%; } .hchip.c2 { right: -2%; top: 12%; } .hchip.c3 { right: -6%; top: 27%; }
+  .hchip.c4 { right: -2%; top: 42%; } .hchip.c5 { right: -6%; top: auto; bottom: 8%; } .hchip.c6 { left: 4%; right: auto; top: 16%; bottom: auto; }
 }
 .hplan {
   position: absolute; z-index: 1; left: 0; bottom: 12px; width: 230px; background: var(--aubergine); color: var(--bone); border-radius: 24px; padding: 16px;
